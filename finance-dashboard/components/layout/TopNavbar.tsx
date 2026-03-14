@@ -1,3 +1,5 @@
+"use client";
+
 import { Bell, Search, PlusCircle, Settings, User } from "lucide-react"
 import { useSearch } from "@/context/SearchContext"
 

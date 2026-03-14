@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
+import dynamic from 'next/dynamic'
 import { StatCard } from "@/components/dashboard/StatCard"
-import { BalanceChart } from "@/components/charts/BalanceChart"
-import { SpendingChart } from "@/components/charts/SpendingChart"
+const BalanceChart = dynamic(() => import("@/components/charts/BalanceChart").then(mod => mod.BalanceChart), { ssr: false })
+const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
 import { TransactionTable } from "@/components/finance/TransactionTable"
 import { Button } from "@/components/ui/button"
 import { Plus, Minus, TrendingUp, ArrowRightLeft, Sparkles, Loader2 } from "lucide-react"

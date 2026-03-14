@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react"
 import { Transaction } from "@/types"
 import { Search, Filter, MoreVertical, ShoppingCart, Briefcase, Coffee, TrendingUp, ShoppingBag } from "lucide-react"
