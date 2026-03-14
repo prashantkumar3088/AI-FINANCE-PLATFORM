@@ -1,5 +1,8 @@
+import React from "react"
 import { Transaction } from "@/types"
 import { Search, Filter, MoreVertical, ShoppingCart, Briefcase, Coffee, TrendingUp, ShoppingBag } from "lucide-react"
+
+import { useSearch } from "@/context/SearchContext"
 
 interface TransactionTableProps {
   transactions: Transaction[]
@@ -7,6 +10,9 @@ interface TransactionTableProps {
 }
 
 export function TransactionTable({ transactions, title = "Recent Transactions" }: TransactionTableProps) {
+  const { searchQuery: globalSearch } = useSearch()
+  const [localSearch, setLocalSearch] = React.useState("")
+
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'shopping-cart': return <ShoppingCart size={20} />
@@ -18,6 +24,13 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
     }
   }
 
+  const effectiveSearch = globalSearch || localSearch
+
+  const filteredTransactions = transactions.filter(t => 
+    t.description.toLowerCase().includes(effectiveSearch.toLowerCase()) ||
+    t.category.toLowerCase().includes(effectiveSearch.toLowerCase())
+  )
+
   return (
     <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] w-full overflow-hidden">
       <div className="p-5 border-b border-[oklch(0.25_0.02_260)] flex items-center justify-between">
@@ -28,6 +41,8 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
             <input
               type="text"
               placeholder="Search..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className="h-9 w-48 rounded-lg border border-[oklch(0.25_0.02_260)] bg-[oklch(0.145_0_0)] pl-9 pr-3 text-sm text-[oklch(0.985_0_0)] placeholder:text-[oklch(0.65_0.01_260)] focus:border-[oklch(0.50_0.20_250)] focus:outline-none"
             />
           </div>
@@ -49,11 +64,11 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
             </tr>
           </thead>
           <tbody>
-            {transactions.map((t, i) => (
+            {filteredTransactions.map((t, i) => (
               <tr 
                 key={t.id} 
                 className={`border-b border-[oklch(0.25_0.02_260)] hover:bg-[oklch(0.25_0.02_260)]/30 transition-colors ${
-                  i === transactions.length - 1 ? 'border-none' : ''
+                  i === filteredTransactions.length - 1 ? 'border-none' : ''
                 }`}
               >
                 <td className="px-5 py-4">

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { AuthProvider } from "@/context/AuthContext";
+import { SearchProvider } from "@/context/SearchContext";
 
 export default function RootLayout({
   children,
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-[oklch(0.145_0_0)] text-[oklch(0.985_0_0)] antialiased selection:bg-[oklch(0.50_0.20_250)] selection:text-white`}>
         <AuthProvider>
-          {children}
+          <SearchProvider>
+            {children}
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>

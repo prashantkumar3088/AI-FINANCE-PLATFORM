@@ -1,11 +1,85 @@
+"use client";
+
+import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
 import { TransactionTable } from "@/components/finance/TransactionTable"
-import { mockTransactions } from "@/lib/mock-data"
 import { Button } from "@/components/ui/button"
-import { CalendarIcon, Plus } from "lucide-react"
+import { CalendarIcon, Plus, Loader2 } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
+import { apiService } from "@/lib/api-service"
+import { Transaction } from "@/types"
 
 export default function ExpensesPage() {
+  const { user } = useAuth()
+  const [expenses, setExpenses] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  
+  // Form State
+  const [amount, setAmount] = useState("")
+  const [category, setCategory] = useState("Food & Dining")
+  const [description, setDescription] = useState("")
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+
+  useEffect(() => {
+    if (user) {
+      fetchExpenses()
+    }
+  }, [user])
+
+  const fetchExpenses = async () => {
+    try {
+      setLoading(true)
+      const data = await apiService.getExpenses(user!.uid)
+      // Convert backend transaction to frontend transaction format if needed
+      // Our backend returns { id, user_id, amount, category, type, description, date }
+      // Frontend expects { id, description, category, date, amount, icon, color }
+      const formatted = data.map((t: any) => ({
+        id: t.id,
+        description: t.description || "No description",
+        category: t.category,
+        date: new Date(t.date).toLocaleDateString(),
+        amount: t.amount,
+        icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
+              t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
+        color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
+               t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
+      }))
+      setExpenses(formatted)
+    } catch (error) {
+      console.error("Failed to fetch expenses:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user || !amount || !description) return
+
+    try {
+      setSubmitting(true)
+      await apiService.addExpense({
+        user_id: user.uid,
+        amount: parseFloat(amount),
+        category,
+        description,
+        date: new Date(date).toISOString()
+      })
+      
+      // Reset form and refresh list
+      setAmount("")
+      setDescription("")
+      fetchExpenses()
+    } catch (error) {
+      console.error("Failed to add expense:", error)
+      alert("Error adding expense. Is the backend running?")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <DashboardLayout>
       <TopNavbar 
@@ -29,7 +103,6 @@ export default function ExpensesPage() {
                   Last 6 Months
                </div>
              </div>
-             {/* Note: In the screenshot this is an empty dark area, likely a placeholder for a chart */}
              <div className="h-[250px] w-full bg-[oklch(0.145_0_0)] rounded-xl border border-[oklch(0.25_0.02_260)] flex flex-col justify-end p-4">
                 <div className="flex justify-between w-full text-xs text-[oklch(0.65_0.01_260)] border-t border-[oklch(0.25_0.02_260)] pt-2 mt-auto px-4">
                   <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
@@ -37,94 +110,103 @@ export default function ExpensesPage() {
              </div>
           </div>
 
-          {/* Category Distribution Area */}
           <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm text-center flex flex-col items-center">
              <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6 w-full text-left">Category Distribution</h3>
              
-             {/* Mocking a donut chart visually */}
              <div className="relative h-64 w-64 my-4 flex items-center justify-center">
                <div className="absolute inset-0 rounded-full border-[16px] border-[oklch(0.50_0.20_250)] border-r-[oklch(0.80_0.10_80)] border-t-[oklch(0.70_0.15_150)] border-l-[oklch(0.50_0.20_250)]" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)', transform: 'rotate(45deg)'}}></div>
                <div className="absolute inset-0 rounded-full border-[16px] border-[oklch(0.60_0.18_30)]" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%, 50% 100%)', transform: 'rotate(50deg)'}}></div>
                <div className="absolute inset-0 rounded-full border-[16px] border-[oklch(0.65_0.15_300)] border-t-transparent border-l-transparent border-b-transparent" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 50%)', transform: 'rotate(-25deg)'}}></div>
                
                <div className="h-48 w-48 rounded-full bg-[oklch(0.18_0.01_260)] z-10 flex flex-col items-center justify-center">
-                 <span className="text-2xl font-bold text-[oklch(0.985_0_0)]">$4.2k</span>
+                 <span className="text-2xl font-bold text-[oklch(0.985_0_0)]">${expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</span>
                  <span className="text-sm text-[oklch(0.65_0.01_260)]">Total Spent</span>
                </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-4 w-full mt-4 text-left text-sm">
-                <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-[oklch(0.50_0.20_250)]"></div><span className="text-[oklch(0.65_0.01_260)]">Bills (40%)</span></div>
-                <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-[oklch(0.80_0.10_80)]"></div><span className="text-[oklch(0.65_0.01_260)]">Food (25%)</span></div>
-                <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-[oklch(0.70_0.15_150)]"></div><span className="text-[oklch(0.65_0.01_260)]">Shopping (20%)</span></div>
-                <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-[oklch(0.65_0.15_300)]"></div><span className="text-[oklch(0.65_0.01_260)]">Others (15%)</span></div>
              </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Add Expense Form Area */}
           <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
              <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6 flex items-center gap-2">
                <Plus className="bg-[oklch(0.50_0.20_250)] text-white rounded-full p-0.5" size={20} />
                Add New Expense
              </h3>
              
-             <form className="space-y-4">
+             <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Description</label>
+                  <input 
+                    type="text" 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Merchant or item" 
+                    className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-4 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all" 
+                    required
+                  />
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Amount</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.65_0.01_260)]">$</span>
-                    <input type="text" placeholder="0.00" className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl pl-8 pr-4 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all" />
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00" 
+                      className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl pl-8 pr-4 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all" 
+                      required
+                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Category</label>
-                  <select className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] appearance-none focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all cursor-pointer">
+                  <select 
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] appearance-none focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all cursor-pointer"
+                  >
                     <option>Food & Dining</option>
                     <option>Travel</option>
                     <option>Shopping</option>
+                    <option>Entertainment</option>
+                    <option>Bills</option>
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                     <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Date</label>
-                     <div className="relative">
-                        <input type="text" placeholder="mm/dd/yyyy" className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all text-sm" />
-                        <CalendarIcon size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.65_0.01_260)]" />
-                     </div>
-                  </div>
-                  <div>
-                     <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Time</label>
-                     <div className="relative">
-                        <input type="text" placeholder="--:--" className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all text-sm text-center" />
-                     </div>
-                  </div>
+                <div>
+                   <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Date</label>
+                   <input 
+                    type="date" 
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all text-sm" 
+                   />
                 </div>
 
-                <div>
-                   <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Notes (Optional)</label>
-                   <textarea placeholder="Where did you spend it?" rows={3} className="w-full bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl p-3 text-[oklch(0.985_0_0)] resize-none focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all placeholder:text-[oklch(0.65_0.01_260)] text-sm"></textarea>
-                </div>
+                <Button 
+                  type="submit" 
+                  disabled={submitting}
+                  className="w-full h-11 bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white rounded-xl font-bold transition-all"
+                >
+                  {submitting ? <Loader2 className="animate-spin" size={20} /> : "Save Expense"}
+                </Button>
              </form>
-
-             {/* Mock user profile area at bottom left in the screenshot */}
-             <div className="mt-8 pt-4 border-t border-[oklch(0.25_0.02_260)] flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-[oklch(0.25_0.02_260)] overflow-hidden flex items-center justify-center text-xl">👩🏻‍💼</div>
-                <div>
-                   <p className="font-medium text-[oklch(0.985_0_0)] text-sm">Alex Rivera</p>
-                   <p className="text-xs text-[oklch(0.65_0.01_260)]">Premium Plan</p>
-                </div>
-             </div>
           </div>
 
           <div className="lg:col-span-2">
-            <TransactionTable transactions={mockTransactions} />
+            {loading ? (
+              <div className="h-64 flex items-center justify-center rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)]">
+                <Loader2 className="animate-spin text-[oklch(0.50_0.20_250)]" size={32} />
+              </div>
+            ) : (
+              <TransactionTable transactions={expenses} title="Real Transactions" />
+            )}
           </div>
         </div>
-
       </div>
     </DashboardLayout>
   )

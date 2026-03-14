@@ -1,6 +1,9 @@
 import { Bell, Search, PlusCircle, Settings, User } from "lucide-react"
+import { useSearch } from "@/context/SearchContext"
 
 export function TopNavbar({ title, actions }: { title?: string, actions?: React.ReactNode }) {
+  const { searchQuery, setSearchQuery } = useSearch()
+
   return (
     <div className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-[oklch(0.20_0.02_260)] bg-[oklch(0.145_0_0)/80%] px-8 backdrop-blur-md">
       <div className="flex items-center gap-4">
@@ -13,6 +16,8 @@ export function TopNavbar({ title, actions }: { title?: string, actions?: React.
           <input
             type="text"
             placeholder="Search analytics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="h-10 w-64 rounded-full border border-[oklch(0.25_0.02_260)] bg-[oklch(0.18_0.01_260)] pl-10 pr-4 text-sm text-[oklch(0.985_0_0)] placeholder:text-[oklch(0.65_0.01_260)] focus:border-[oklch(0.50_0.20_250)] focus:outline-none focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] transition-all"
           />
         </div>
