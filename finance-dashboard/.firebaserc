@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "ai-finance-platform-b5f75"
+  },
   "targets": {},
   "etags": {}
 }

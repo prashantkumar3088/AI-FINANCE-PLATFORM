@@ -20,13 +20,15 @@ export default function DashboardPage() {
     transactions: Transaction[],
     insights: Insight[],
     totalExpenses: number,
+    weeklySpending: any[],
     income: number,
     loading: boolean
   }>({
     transactions: [],
     insights: [],
     totalExpenses: 0,
-    income: 8250, // Mocked for now until income API is ready
+    weeklySpending: [],
+    income: 8250,
     loading: true
   })
 
@@ -39,7 +41,7 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setData(prev => ({ ...prev, loading: true }))
-      const [expenses, insights] = await Promise.all([
+      const [expenses, insightsData] = await Promise.all([
         apiService.getExpenses(user!.uid),
         apiService.getInsights(user!.uid)
       ])
@@ -58,10 +60,30 @@ export default function DashboardPage() {
                t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
       }))
 
+      // Process Weekly Spending
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const weeklyData = days.map(day => ({ name: day, value: 0, budget: 500 }))
+      
+      expenses.forEach((t: any) => {
+        const d = new Date(t.date)
+        const dayName = days[d.getDay()]
+        const weekDay = weeklyData.find(w => w.name === dayName)
+        if (weekDay) weekDay.value += t.amount
+      })
+
+      // Process Insights
+      const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
+        id: i,
+        title: ins.type === 'alert' ? 'Spending Alert' : 'Strategy Update',
+        description: ins.message,
+        type: ins.type === 'alert' ? 'warning' : 'opportunity'
+      }))
+
       setData({
         transactions: formattedTransactions,
-        insights: insights || [],
+        insights: formattedInsights,
         totalExpenses: totalExp,
+        weeklySpending: weeklyData,
         income: 8250,
         loading: false
       })
@@ -78,7 +100,10 @@ export default function DashboardPage() {
       <TopNavbar 
         title="Dashboard" 
         actions={
-          <Button className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2">
+          <Button 
+            onClick={() => window.location.href = '/expenses'}
+            className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2 rounded-full px-6 shadow-lg shadow-[oklch(0.50_0.20_250)]/20"
+          >
             <Plus size={16} /> Quick Add
           </Button>
         } 
@@ -212,15 +237,7 @@ export default function DashboardPage() {
                 <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-2">Spending Trend</h3>
                   <p className="text-sm text-[oklch(0.65_0.01_260)] mb-2">Weekly breakdown of expenses</p>
-                  <SpendingChart data={[
-                    { name: 'Mon', value: 400, budget: 500 },
-                    { name: 'Tue', value: 300, budget: 500 },
-                    { name: 'Wed', value: data.totalExpenses / 4, budget: 500 },
-                    { name: 'Thu', value: 200, budget: 500 },
-                    { name: 'Fri', value: 278, budget: 500 },
-                    { name: 'Sat', value: 189, budget: 500 },
-                    { name: 'Sun', value: 239, budget: 500 },
-                  ]} />
+                  <SpendingChart data={data.weeklySpending} />
                 </div>
               </div>
             </div>

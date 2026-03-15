@@ -3,11 +3,10 @@ from datetime import datetime
 from google.cloud.firestore import Client
 
 def generate_insights(user_id: str, db: Client) -> list:
-    """Analyzes spending patterns to generate comparative insights."""
+    """Analyzes spending patterns to generate high-quality financial insights."""
     
-    transactions_ref = db.collection('transactions')
-    docs = transactions_ref.where('user_id', '==', user_id).where('type', '==', 'expense').stream()
-    
+    # 1. Fetch transactions (expenses only)
+    docs = db.collection('transactions').where('user_id', '==', user_id).where('type', '==', 'expense').stream()
     data = []
     for doc in docs:
         d = doc.to_dict()
@@ -17,50 +16,78 @@ def generate_insights(user_id: str, db: Client) -> list:
             "date": d.get("date")
         })
         
+    # 2. Fetch budgets
+    budget_docs = db.collection('budgets').where('user_id', '==', user_id).stream()
+    budgets = {b.to_dict()['category']: b.to_dict()['monthly_limit'] for b in budget_docs}
+        
     if not data:
-        return [{"message": "Not enough data to generate insights yet.", "type": "info"}]
+        return [{"message": "I'm still learning your habits. Add some transactions to get started!", "type": "info", "category": "General"}]
         
     df = pd.DataFrame(data)
     df['date'] = pd.to_datetime(df['date'], utc=True)
     
-    now = datetime.utcnow()
-    current_month_start = pd.Timestamp(year=now.year, month=now.month, day=1, tz='UTC')
+    now = datetime.utcnow().replace(tzinfo=None)
+    current_month_start = datetime(now.year, now.month, 1)
     
-    if now.month == 1:
-        last_month_start = pd.Timestamp(year=now.year - 1, month=12, day=1, tz='UTC')
-    else:
-        last_month_start = pd.Timestamp(year=now.year, month=now.month - 1, day=1, tz='UTC')
-        
-    # Split into current month vs last month
-    current_month_data = df[df['date'] >= current_month_start]
-    last_month_data = df[(df['date'] >= last_month_start) & (df['date'] < current_month_start)]
-    
+    # Insights list
     insights = []
     
-    # Compare Category Spending
-    current_cat_totals = current_month_data.groupby('category')['amount'].sum()
-    last_cat_totals = last_month_data.groupby('category')['amount'].sum()
+    # Calculate Spent this month
+    df_current = df[df['date'].dt.tz_localize(None) >= current_month_start]
+    current_cat_totals = df_current.groupby('category')['amount'].sum().to_dict()
     
-    for category in current_cat_totals.index:
-        current_val = current_cat_totals[category]
-        last_val = last_cat_totals.get(category, 0)
-        
-        if last_val > 0:
-            pct_change = ((current_val - last_val) / last_val) * 100
-            if pct_change > 20: # Trigger alert if spent > 20% more
+    # Insight 1: Budget Proximity
+    for cat, spent in current_cat_totals.items():
+        if cat in budgets:
+            limit = budgets[cat]
+            usage = (spent / limit) * 100
+            if usage >= 90:
                 insights.append({
-                    "message": f"You spent {pct_change:.0f}% more on {category} this month compared to last month.",
+                    "message": f"Critical: You've used {usage:.0f}% of your '{cat}' budget (₹{spent:,.0f}/₹{limit:,.0f}).",
                     "type": "alert",
-                    "category": category
+                    "category": cat
                 })
-            elif pct_change < -15:
+            elif usage >= 70:
                 insights.append({
-                    "message": f"Great job! Your spending on {category} decreased by {abs(pct_change):.0f}% this month.",
-                    "type": "success",
-                    "category": category
+                    "message": f"Caution: You are approaching your limit for '{cat}'. Still have ₹{limit-spent:,.0f} left.",
+                    "type": "info",
+                    "category": cat
                 })
-                
+
+    # Insight 2: Top Spending Category
+    if not df_current.empty:
+        top_cat = df_current.groupby('category')['amount'].sum().idxmax()
+        top_amt = df_current.groupby('category')['amount'].sum().max()
+        insights.append({
+            "message": f"Your highest spend so far is in '{top_cat}' at ₹{top_amt:,.0f}.",
+            "type": "info",
+            "category": top_cat
+        })
+
+    # Insight 3: Comparative Analysis (Current vs Last Month)
+    last_month_start = (current_month_start - pd.DateOffset(months=1))
+    df_last = df[(df['date'].dt.tz_localize(None) >= last_month_start) & (df['date'].dt.tz_localize(None) < current_month_start)]
+    
+    if not df_last.empty:
+        last_cat_totals = df_last.groupby('category')['amount'].sum().to_dict()
+        for cat, curr_val in current_cat_totals.items():
+            prev_val = last_cat_totals.get(cat, 0)
+            if prev_val > 0:
+                diff = ((curr_val - prev_val) / prev_val) * 100
+                if diff > 25:
+                    insights.append({
+                        "message": f"Spending in '{cat}' is up by {diff:.0f}% compared to last month. Any unexpected costs?",
+                        "type": "alert",
+                        "category": cat
+                    })
+                elif diff < -15:
+                    insights.append({
+                        "message": f"Fantastic! You've reduced your '{cat}' spending by {abs(diff):.0f}% compared to last month.",
+                        "type": "success",
+                        "category": cat
+                    })
+
     if not insights:
-        insights.append({"message": "Your spending patterns are consistent with recent history.", "type": "info"})
+        insights.append({"message": "You're doing great! Your spending is well-distributed and within limits.", "type": "success", "category": "General"})
         
-    return insights
+    return insights[:5] # Keep it punchy

@@ -7,20 +7,22 @@ import json
 # Initialize Firebase on module load
 if not firebase_admin._apps:
     try:
-        # In actual production or local run, you'd mount the JSON file here.
+        # 1. Try explicit service account file
         if os.path.exists(settings.FIREBASE_CREDENTIALS_PATH):
             cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
             firebase_admin.initialize_app(cred)
             print("Successfully initialized Firebase Admin SDK with credentials file.")
+        # 2. Try JSON string from environment variable (useful for some CI/CD)
+        elif os.getenv("FIREBASE_CREDENTIALS_JSON"):
+            cred_json = json.loads(os.getenv("FIREBASE_CREDENTIALS_JSON"))
+            cred = credentials.Certificate(cred_json)
+            firebase_admin.initialize_app(cred)
+            print("Successfully initialized Firebase Admin SDK with credentials JSON from environment.")
+        # 3. Fallback to Application Default Credentials (standard for Google Cloud/Firebase Functions)
         else:
-            # Fallback to application default credentials if json is missing
-            print(f"Credentials file {settings.FIREBASE_CREDENTIALS_PATH} not found. Attempting default auth.")
-            # We mock the initialization if we don't have it purely so FastAPI can start and we can see schema shapes
-            # In a real environment, Application Default Credentials would be picked up.
-            try:
-                firebase_admin.initialize_app()
-            except ValueError:
-                print("Could not initialize with default credentials either. Service will crash on DB access.")
+            print("Attempting to initialize with Application Default Credentials.")
+            firebase_admin.initialize_app()
+            print("Successfully initialized with Default Credentials.")
     except Exception as e:
         print(f"Failed to initialize Firebase: {e}")
 

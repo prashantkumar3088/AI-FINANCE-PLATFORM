@@ -2,6 +2,7 @@
 
 import { Bell, Search, PlusCircle, Settings, User } from "lucide-react"
 import { useSearch } from "@/context/SearchContext"
+import { NotificationDropdown } from "./NotificationDropdown"
 
 export function TopNavbar({ title, actions }: { title?: string, actions?: React.ReactNode }) {
   const { searchQuery, setSearchQuery } = useSearch()
@@ -24,10 +25,9 @@ export function TopNavbar({ title, actions }: { title?: string, actions?: React.
           />
         </div>
 
-        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[oklch(0.18_0.01_260)] text-[oklch(0.65_0.01_260)] transition-colors hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-[oklch(0.145_0_0)]"></span>
-        </button>
+        <div className="flex items-center gap-4">
+          <NotificationDropdown />
+        </div>
 
         <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[oklch(0.60_0.18_30)]/20 text-[oklch(0.60_0.18_30)] transition-colors hover:bg-[oklch(0.60_0.18_30)] hover:text-white">
           <User className="h-5 w-5" />

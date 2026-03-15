@@ -22,12 +22,14 @@ def get_insights(user_id: str, db: Client = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Database not ready")
         
     insights = generate_insights(user_id, db)
-    return {"user_id": user_id, "insights": insights}
+    return {"insights": insights}
 
 @router.get("/advisor")
 def get_advice(user_id: str, db: Client = Depends(get_db)):
     if not db:
         raise HTTPException(status_code=500, detail="Database not ready")
         
-    advice = generate_advice(user_id, db)
-    return {"user_id": user_id, **advice}
+    result = generate_advice(user_id, db)
+    # The frontend expects 'advice' field 
+    advice_text = " ".join(result.get("suggestions", []))
+    return {"advice": advice_text, "status": "Optimizing", "user_id": user_id}

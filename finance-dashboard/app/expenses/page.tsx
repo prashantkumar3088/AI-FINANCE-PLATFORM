@@ -3,16 +3,20 @@
 import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
-import { TransactionTable } from "@/components/finance/TransactionTable"
-import { Button } from "@/components/ui/button"
-import { CalendarIcon, Plus, Loader2 } from "lucide-react"
+const BalanceChart = dynamic(() => import("@/components/charts/BalanceChart").then(mod => mod.BalanceChart), { ssr: false })
+const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
+import dynamic from 'next/dynamic'
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
 import { Transaction } from "@/types"
+import { TransactionTable } from "@/components/finance/TransactionTable"
+import { Button } from "@/components/ui/button"
+import { Plus, Loader2 } from "lucide-react"
 
 export default function ExpensesPage() {
   const { user } = useAuth()
   const [expenses, setExpenses] = useState<Transaction[]>([])
+  const [chartData, setChartData] = useState<{ weekly: any[], monthly: any[] }>({ weekly: [], monthly: [] })
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   
@@ -32,9 +36,7 @@ export default function ExpensesPage() {
     try {
       setLoading(true)
       const data = await apiService.getExpenses(user!.uid)
-      // Convert backend transaction to frontend transaction format if needed
-      // Our backend returns { id, user_id, amount, category, type, description, date }
-      // Frontend expects { id, description, category, date, amount, icon, color }
+      
       const formatted = data.map((t: any) => ({
         id: t.id,
         description: t.description || "No description",
@@ -46,7 +48,19 @@ export default function ExpensesPage() {
         color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
                t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
       }))
+      
+      // Process Weekly
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const weekly = days.map(day => ({ name: day, value: 0, budget: 500 }))
+      data.forEach((t: any) => {
+        const d = new Date(t.date)
+        const day = days[d.getDay()]
+        const w = weekly.find(x => x.name === day)
+        if (w) w.value += t.amount
+      })
+
       setExpenses(formatted)
+      setChartData({ weekly, monthly: [] })
     } catch (error) {
       console.error("Failed to fetch expenses:", error)
     } finally {
@@ -68,7 +82,6 @@ export default function ExpensesPage() {
         date: new Date(date).toISOString()
       })
       
-      // Reset form and refresh list
       setAmount("")
       setDescription("")
       fetchExpenses()
@@ -85,8 +98,11 @@ export default function ExpensesPage() {
       <TopNavbar 
         title="Expense Tracker" 
         actions={
-          <Button className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2">
-            <Plus size={16} /> Quick Transaction
+          <Button 
+            onClick={() => window.location.href='/budgets'}
+            className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2 rounded-full px-6"
+          >
+            <Plus size={16} /> Manage Budgets
           </Button>
         } 
       />
@@ -95,19 +111,14 @@ export default function ExpensesPage() {
         <p className="text-[oklch(0.65_0.01_260)] mb-6 -mt-4">Monitor your spending and manage your budget efficiently.</p>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Chart Area */}
           <div className="lg:col-span-2 rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
              <div className="flex items-center justify-between mb-6">
-               <h3 className="text-lg font-bold text-[oklch(0.985_0_0)]">Monthly Spending Trend</h3>
+               <h3 className="text-lg font-bold text-[oklch(0.985_0_0)]">Weekly Spending Breakdown</h3>
                <div className="bg-[oklch(0.25_0.02_260)] text-[oklch(0.985_0_0)] text-xs font-medium px-3 py-1.5 rounded-lg border border-[oklch(0.25_0.02_260)]">
-                  Last 6 Months
+                  Active View
                </div>
              </div>
-             <div className="h-[250px] w-full bg-[oklch(0.145_0_0)] rounded-xl border border-[oklch(0.25_0.02_260)] flex flex-col justify-end p-4">
-                <div className="flex justify-between w-full text-xs text-[oklch(0.65_0.01_260)] border-t border-[oklch(0.25_0.02_260)] pt-2 mt-auto px-4">
-                  <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                </div>
-             </div>
+             <SpendingChart data={chartData.weekly} />
           </div>
 
           <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm text-center flex flex-col items-center">
@@ -170,10 +181,12 @@ export default function ExpensesPage() {
                     className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] appearance-none focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all cursor-pointer"
                   >
                     <option>Food & Dining</option>
-                    <option>Travel</option>
+                    <option>Transportation</option>
                     <option>Shopping</option>
                     <option>Entertainment</option>
                     <option>Bills</option>
+                    <option>Health</option>
+                    <option>Others</option>
                   </select>
                 </div>
 

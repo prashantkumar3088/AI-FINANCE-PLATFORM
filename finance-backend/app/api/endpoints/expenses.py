@@ -27,12 +27,12 @@ def add_expense(expense: ExpenseCreate, db: Client = Depends(get_db)):
     # Add to Firestore
     _, doc_ref = transactions_ref.add(doc_data)
     
-    # Return matched schema
-    return {
-        **doc_data,
-        "id": doc_ref.id,
-        "type": TransactionType.expense
-    }
+    # Update doc_data for response
+    doc_data["id"] = doc_ref.id
+    if isinstance(doc_data["date"], datetime):
+        doc_data["date"] = doc_data["date"].isoformat()
+    
+    return doc_data
 
 @router.get("/list", response_model=List[TransactionSchema])
 def list_expenses(user_id: str, limit: int = 100, db: Client = Depends(get_db)):

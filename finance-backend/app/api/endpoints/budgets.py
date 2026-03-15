@@ -21,19 +21,55 @@ def create_budget(budget: BudgetCreate, db: Client = Depends(get_db)):
         "id": doc_ref.id
     }
 
-@router.get("/list", response_model=List[BudgetSchema])
+@router.get("/list", response_model=List[dict])
 def list_budgets(user_id: str, db: Client = Depends(get_db)):
     if not db:
         raise HTTPException(status_code=500, detail="Database not initialized")
         
     budgets_ref = db.collection('budgets')
-    docs = budgets_ref.where('user_id', '==', user_id).stream()
+    budget_docs = budgets_ref.where('user_id', '==', user_id).stream()
     
-    results = []
-    for doc in docs:
+    # Get expenses to calculate spent
+    from datetime import datetime
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1)
+    
+    transactions_ref = db.collection('transactions')
+    expense_docs = transactions_ref.where('user_id', '==', user_id)\
+                                 .where('type', '==', 'expense')\
+                                 .stream()
+    
+    expenses = []
+    for doc in expense_docs:
         d = doc.to_dict()
-        d['id'] = doc.id
-        results.append(d)
+        if "date" in d:
+             dt = d["date"]
+             # Handle both ISO string and datetime object
+             if isinstance(dt, str):
+                 dt = datetime.fromisoformat(dt.replace("Z", "+00:00"))
+             
+             # Convert to naive or aware comparison
+             if dt.tzinfo is not None:
+                 dt = dt.replace(tzinfo=None)
+                 
+             if dt >= month_start:
+                 expenses.append(d)
+
+    results = []
+    for doc in budget_docs:
+        d = doc.to_dict()
+        category = d.get("category")
+        
+        # Calculate spent for this category
+        spent = sum(e.get("amount", 0) for e in expenses if e.get("category") == category)
+        
+        results.append({
+            "id": doc.id,
+            "user_id": user_id,
+            "category": category,
+            "limit": d.get("monthly_limit", 0),
+            "spent": spent
+        })
         
     return results
 
