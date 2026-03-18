@@ -20,15 +20,11 @@ export default function AlertsPage() {
   }, [user])
 
   const fetchData = async () => {
-    try {
-      setLoading(true)
-      const data = await apiService.getAlerts(user!.uid)
-      setAlerts(data || [])
-    } catch (error) {
-      console.error("Failed to fetch alerts:", error)
-    } finally {
-      setLoading(false)
-    }
+    // Show page instantly, load data in background
+    apiService.getAlerts(user!.uid)
+      .then(data => setAlerts(data || []))
+      .catch(error => console.error("Failed to fetch alerts:", error))
+      .finally(() => setLoading(false))
   }
 
   return (

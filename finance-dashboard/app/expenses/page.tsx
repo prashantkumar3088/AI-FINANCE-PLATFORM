@@ -32,40 +32,37 @@ export default function ExpensesPage() {
     }
   }, [user])
 
-  const fetchExpenses = async () => {
-    try {
-      setLoading(true)
-      const data = await apiService.getExpenses(user!.uid)
-      
-      const formatted = data.map((t: any) => ({
-        id: t.id,
-        description: t.description || "No description",
-        category: t.category,
-        date: new Date(t.date).toLocaleDateString(),
-        amount: t.amount,
-        icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
-              t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
-        color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
-               t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
-      }))
-      
-      // Process Weekly
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-      const weekly = days.map(day => ({ name: day, value: 0, budget: 500 }))
-      data.forEach((t: any) => {
-        const d = new Date(t.date)
-        const day = days[d.getDay()]
-        const w = weekly.find(x => x.name === day)
-        if (w) w.value += t.amount
-      })
+  const fetchExpenses = () => {
+    // Load data in background — page renders immediately
+    setLoading(true)
+    apiService.getExpenses(user!.uid)
+      .then(data => {
+        const formatted = data.map((t: any) => ({
+          id: t.id,
+          description: t.description || "No description",
+          category: t.category,
+          date: new Date(t.date).toLocaleDateString(),
+          amount: t.amount,
+          icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
+                t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
+          color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
+                 t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
+        }))
+        
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        const weekly = days.map(day => ({ name: day, value: 0, budget: 500 }))
+        data.forEach((t: any) => {
+          const d = new Date(t.date)
+          const day = days[d.getDay()]
+          const w = weekly.find(x => x.name === day)
+          if (w) w.value += t.amount
+        })
 
-      setExpenses(formatted)
-      setChartData({ weekly, monthly: [] })
-    } catch (error) {
-      console.error("Failed to fetch expenses:", error)
-    } finally {
-      setLoading(false)
-    }
+        setExpenses(formatted)
+        setChartData({ weekly, monthly: [] })
+      })
+      .catch(error => console.error("Failed to fetch expenses:", error))
+      .finally(() => setLoading(false))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

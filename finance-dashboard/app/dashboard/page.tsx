@@ -12,20 +12,18 @@ import { Button } from "@/components/ui/button"
 import { Plus, Minus, TrendingUp, ArrowRightLeft, Sparkles, Loader2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
-import { Transaction, Insight } from "@/types"
+import { Transaction } from "@/types"
 
 export default function DashboardPage() {
   const { user } = useAuth()
   const [data, setData] = useState<{
     transactions: Transaction[],
-    insights: Insight[],
     totalExpenses: number,
     weeklySpending: any[],
     income: number,
     loading: boolean
   }>({
     transactions: [],
-    insights: [],
     totalExpenses: 0,
     weeklySpending: [],
     income: 8250,
@@ -41,8 +39,6 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setData(prev => ({ ...prev, loading: true }))
-      
-      // Load fast expenses immediately
       const expenses = await apiService.getExpenses(user!.uid)
 
       const totalExp = expenses.reduce((acc: number, curr: any) => acc + curr.amount, 0)
@@ -59,10 +55,8 @@ export default function DashboardPage() {
                t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
       }))
 
-      // Process Weekly Spending
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       const weeklyData = days.map(day => ({ name: day, value: 0, budget: 500 }))
-      
       expenses.forEach((t: any) => {
         const d = new Date(t.date)
         const dayName = days[d.getDay()]
@@ -70,7 +64,6 @@ export default function DashboardPage() {
         if (weekDay) weekDay.value += t.amount
       })
 
-      // Turn off full-page loader immediately so user sees their data
       setData(prev => ({
         ...prev,
         transactions: formattedTransactions,
@@ -79,18 +72,6 @@ export default function DashboardPage() {
         income: 8250,
         loading: false
       }))
-
-      // Background fetch AI Insights gracefully 
-      apiService.getInsights(user!.uid).then(insightsData => {
-        const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
-          id: i,
-          title: ins.type === 'alert' ? 'Spending Alert' : 'Strategy Update',
-          description: ins.message,
-          type: ins.type === 'alert' ? 'warning' : 'opportunity'
-        }))
-        setData(prev => ({ ...prev, insights: formattedInsights }))
-      }).catch(err => console.error("AI Insights fetch failed:", err))
-
     } catch (error) {
       console.error("Dashboard load failed:", error)
       setData(prev => ({ ...prev, loading: false }))
@@ -148,24 +129,20 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm flex flex-col">
-                    <div className="flex items-center justify-between mb-6">
+                  <div
+                    onClick={() => window.location.href = '/insights'}
+                    className="rounded-2xl bg-gradient-to-br from-[oklch(0.22_0.05_270)] to-[oklch(0.18_0.01_260)] border border-[oklch(0.35_0.10_270)] p-6 shadow-sm flex flex-col cursor-pointer hover:border-[oklch(0.50_0.20_250)] transition-all group"
+                  >
+                    <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-[oklch(0.985_0_0)]">AI Financial Insights</h3>
-                      <Sparkles size={18} className="text-[oklch(0.50_0.20_250)]" />
+                      <Sparkles size={18} className="text-[oklch(0.50_0.20_250)] group-hover:scale-125 transition-transform" />
                     </div>
-                    <div className="space-y-4 flex-1">
-                      {data.insights.length > 0 ? data.insights.slice(0, 2).map((insight) => (
-                        <div key={insight.id} className="p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)]">
-                          <h4 className={`font-semibold mb-1 ${
-                            insight.type === 'opportunity' ? 'text-[oklch(0.50_0.20_250)]' : 
-                            insight.type === 'success' ? 'text-[oklch(0.70_0.15_150)]' :
-                            'text-[oklch(0.60_0.18_30)]'
-                          }`}>{insight.title}</h4>
-                          <p className="text-sm text-[oklch(0.65_0.01_260)]">{insight.description}</p>
-                        </div>
-                      )) : (
-                        <p className="text-sm text-[oklch(0.65_0.01_260)] italic">Predicting your future trends...</p>
-                      )}
+                    <p className="text-sm text-[oklch(0.65_0.01_260)] mb-6 flex-1 leading-relaxed">
+                      Get a deep AI analysis of your spending habits, category trends, and personalised advice.
+                    </p>
+                    <div className="flex items-center gap-2 text-[oklch(0.50_0.20_250)] font-semibold text-sm">
+                      <span>Open AI Insights</span>
+                      <ArrowRightLeft size={14} />
                     </div>
                   </div>
 

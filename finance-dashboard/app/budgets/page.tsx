@@ -25,15 +25,11 @@ export default function BudgetsPage() {
   }, [user])
 
   const fetchData = async () => {
-    try {
-      setLoading(true)
-      const data = await apiService.getBudgets(user!.uid)
-      setBudgets(data || [])
-    } catch (error) {
-      console.error("Failed to fetch budgets:", error)
-    } finally {
-      setLoading(false)
-    }
+    // Render page immediately; fetch data in background
+    apiService.getBudgets(user!.uid)
+      .then(data => setBudgets(data || []))
+      .catch(error => console.error("Failed to fetch budgets:", error))
+      .finally(() => setLoading(false))
   }
 
   const handleCreateBudget = async (e: React.FormEvent) => {
