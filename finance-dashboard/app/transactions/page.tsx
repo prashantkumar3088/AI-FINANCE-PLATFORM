@@ -20,29 +20,26 @@ export default function TransactionsPage() {
     }
   }, [user])
 
-  const loadTransactions = async () => {
-    try {
-      setLoading(true)
-      const expenses = await apiService.getExpenses(user!.uid)
-      
-      const formatted = expenses.map((t: any) => ({
-        id: t.id,
-        description: t.description || "No description",
-        category: t.category,
-        date: new Date(t.date).toLocaleDateString(),
-        amount: t.amount,
-        icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
-              t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
-        color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
-               t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
-      }))
-
-      setTransactions(formatted)
-      setLoading(false)
-    } catch (error) {
-      console.error("Failed to load transactions:", error)
-      setLoading(false)
-    }
+  const loadTransactions = () => {
+    // Render page instantly
+    setLoading(true)
+    apiService.getExpenses(user!.uid)
+      .then(expenses => {
+        const formatted = expenses.map((t: any) => ({
+          id: t.id,
+          description: t.description || "No description",
+          category: t.category,
+          date: new Date(t.date).toLocaleDateString(),
+          amount: t.amount,
+          icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
+                t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
+          color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
+                 t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
+        }))
+        setTransactions(formatted)
+      })
+      .catch(error => console.error("Failed to load transactions:", error))
+      .finally(() => setLoading(false))
   }
 
   return (
