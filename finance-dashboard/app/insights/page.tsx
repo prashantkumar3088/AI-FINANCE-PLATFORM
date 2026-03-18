@@ -23,13 +23,14 @@ export default function InsightsPage() {
   }, [user])
 
   const fetchData = async () => {
-    try {
-      setLoading(true)
-      const [insightsData, advisorData] = await Promise.all([
-        apiService.getInsights(user!.uid),
-        apiService.getAdvice(user!.uid)
-      ])
-      
+    // Show UI instantly instead of blocking the whole page
+    setLoading(false)
+
+    // Load AI in the background
+    Promise.all([
+      apiService.getInsights(user!.uid),
+      apiService.getAdvice(user!.uid)
+    ]).then(([insightsData, advisorData]) => {
       const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
         id: i,
         title: ins.type === 'alert' ? "Spending Alert" : "Optimization Opportunity",
@@ -41,11 +42,9 @@ export default function InsightsPage() {
 
       setInsights(formattedInsights)
       setAdvice(advisorData)
-    } catch (error) {
+    }).catch(error => {
       console.error("Failed to fetch insights:", error)
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -110,7 +109,7 @@ export default function InsightsPage() {
                 ) : (
                   <div className="p-8 border border-dashed border-[oklch(0.25_0.02_260)] rounded-2xl text-center">
                     <HelpCircle className="mx-auto text-[oklch(0.25_0.02_260)] mb-3" size={32} />
-                    <p className="text-[oklch(0.65_0.01_260)]">No specific insights generated yet. Add more transactions!</p>
+                    <p className="text-[oklch(0.65_0.01_260)] animate-pulse">Analyzing your transactions and generating AI insights...</p>
                   </div>
                 )}
               </div>

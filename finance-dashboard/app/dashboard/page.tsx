@@ -41,10 +41,9 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setData(prev => ({ ...prev, loading: true }))
-      const [expenses, insightsData] = await Promise.all([
-        apiService.getExpenses(user!.uid),
-        apiService.getInsights(user!.uid)
-      ])
+      
+      // Load fast expenses immediately
+      const expenses = await apiService.getExpenses(user!.uid)
 
       const totalExp = expenses.reduce((acc: number, curr: any) => acc + curr.amount, 0)
       
@@ -71,22 +70,27 @@ export default function DashboardPage() {
         if (weekDay) weekDay.value += t.amount
       })
 
-      // Process Insights
-      const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
-        id: i,
-        title: ins.type === 'alert' ? 'Spending Alert' : 'Strategy Update',
-        description: ins.message,
-        type: ins.type === 'alert' ? 'warning' : 'opportunity'
-      }))
-
-      setData({
+      // Turn off full-page loader immediately so user sees their data
+      setData(prev => ({
+        ...prev,
         transactions: formattedTransactions,
-        insights: formattedInsights,
         totalExpenses: totalExp,
         weeklySpending: weeklyData,
         income: 8250,
         loading: false
-      })
+      }))
+
+      // Background fetch AI Insights gracefully 
+      apiService.getInsights(user!.uid).then(insightsData => {
+        const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
+          id: i,
+          title: ins.type === 'alert' ? 'Spending Alert' : 'Strategy Update',
+          description: ins.message,
+          type: ins.type === 'alert' ? 'warning' : 'opportunity'
+        }))
+        setData(prev => ({ ...prev, insights: formattedInsights }))
+      }).catch(err => console.error("AI Insights fetch failed:", err))
+
     } catch (error) {
       console.error("Dashboard load failed:", error)
       setData(prev => ({ ...prev, loading: false }))
