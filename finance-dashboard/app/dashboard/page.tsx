@@ -98,7 +98,7 @@ export default function DashboardPage() {
         {data.loading ? (
           <div className="h-96 flex flex-col items-center justify-center gap-4">
              <Loader2 className="animate-spin text-[oklch(0.50_0.20_250)]" size={48} />
-             <p className="text-[oklch(0.65_0.01_260)]">Syncing with AI Engines...</p>
+             <p className="text-[oklch(0.65_0.01_260)]">Loading your data...</p>
           </div>
         ) : (
           <>
