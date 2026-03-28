@@ -12,17 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Plus, Minus, TrendingUp, ArrowRightLeft, Sparkles, Loader2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
-import { Transaction } from "@/types"
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [data, setData] = useState<{
-    transactions: Transaction[],
-    totalExpenses: number,
-    weeklySpending: any[],
-    income: number,
-    loading: boolean
-  }>({
+  const [data, setData] = useState({
     transactions: [],
     totalExpenses: 0,
     weeklySpending: [],
@@ -39,11 +32,11 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setData(prev => ({ ...prev, loading: true }))
-      const expenses = await apiService.getExpenses(user!.uid)
+      const expenses = await apiService.getExpenses(user.uid)
 
-      const totalExp = expenses.reduce((acc: number, curr: any) => acc + curr.amount, 0)
+      const totalExp = expenses.reduce((acc, curr) => acc + curr.amount, 0)
       
-      const formattedTransactions = expenses.map((t: any) => ({
+      const formattedTransactions = expenses.map((t) => ({
         id: t.id,
         description: t.description || "No description",
         category: t.category,
@@ -57,7 +50,7 @@ export default function DashboardPage() {
 
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       const weeklyData = days.map(day => ({ name: day, value: 0, budget: 500 }))
-      expenses.forEach((t: any) => {
+      expenses.forEach((t) => {
         const d = new Date(t.date)
         const dayName = days[d.getDay()]
         const weekDay = weeklyData.find(w => w.name === dayName)

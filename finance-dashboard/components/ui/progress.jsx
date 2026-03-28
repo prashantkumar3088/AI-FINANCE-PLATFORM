@@ -4,12 +4,7 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 
 import { cn } from "@/lib/utils"
 
-function Progress({
-  className,
-  children,
-  value,
-  ...props
-}: ProgressPrimitive.Root.Props) {
+function Progress({ className, children, value, ...props }) {
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -25,7 +20,7 @@ function Progress({
   )
 }
 
-function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
+function ProgressTrack({ className, ...props }) {
   return (
     <ProgressPrimitive.Track
       className={cn(
@@ -38,10 +33,7 @@ function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   )
 }
 
-function ProgressIndicator({
-  className,
-  ...props
-}: ProgressPrimitive.Indicator.Props) {
+function ProgressIndicator({ className, ...props }) {
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
@@ -51,7 +43,7 @@ function ProgressIndicator({
   )
 }
 
-function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
+function ProgressLabel({ className, ...props }) {
   return (
     <ProgressPrimitive.Label
       className={cn("text-sm font-medium", className)}
@@ -61,7 +53,7 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
   )
 }
 
-function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
+function ProgressValue({ className, ...props }) {
   return (
     <ProgressPrimitive.Value
       className={cn(

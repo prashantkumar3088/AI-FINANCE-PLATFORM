@@ -10,7 +10,7 @@ import { apiService } from "@/lib/api-service"
 
 export default function BudgetsPage() {
   const { user } = useAuth()
-  const [budgets, setBudgets] = useState<any[]>([])
+  const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [newCategory, setNewCategory] = useState("")
@@ -26,13 +26,13 @@ export default function BudgetsPage() {
 
   const fetchData = async () => {
     // Render page immediately; fetch data in background
-    apiService.getBudgets(user!.uid)
+    apiService.getBudgets(user.uid)
       .then(data => setBudgets(data || []))
       .catch(error => console.error("Failed to fetch budgets:", error))
       .finally(() => setLoading(false))
   }
 
-  const handleCreateBudget = async (e: React.FormEvent) => {
+  const handleCreateBudget = async (e) => {
     e.preventDefault()
     if (!newCategory || !newLimit || !user) return
 
@@ -54,8 +54,8 @@ export default function BudgetsPage() {
   }
 
   const totals = budgets.reduce((acc, b) => ({
-    limit: acc.limit + b.limit,
-    spent: acc.spent + b.spent
+    limit: acc.limit + (b.limit ?? 0),
+    spent: acc.spent + (b.spent ?? 0)
   }), { limit: 0, spent: 0 })
 
   return (
@@ -107,8 +107,10 @@ export default function BudgetsPage() {
                   <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6">Category Allocations</h3>
                   <div className="space-y-8">
                      {budgets.length > 0 ? budgets.map((budget) => {
-                        const percentage = Math.min((budget.spent / budget.limit) * 100, 100);
-                        const isOverBudget = budget.spent > budget.limit;
+                        const spent = budget.spent ?? 0;
+                        const lim = budget.limit ?? 0;
+                        const percentage = lim > 0 ? Math.min((spent / lim) * 100, 100) : 0;
+                        const isOverBudget = spent > lim;
                         const icon = budget.category === 'Food & Dining' ? '🍽️' : 
                                      budget.category === 'Transportation' ? '🚗' : 
                                      budget.category === 'Entertainment' ? '🎬' : '💰';
@@ -134,9 +136,9 @@ export default function BudgetsPage() {
                                  </div>
                                  <div className="text-right">
                                     <p className={`font-bold text-lg ${isOverBudget ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'}`}>
-                                       ₹{budget.spent.toLocaleString()}
+                                       ₹{spent.toLocaleString()}
                                     </p>
-                                    <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ₹{budget.limit.toLocaleString()}</p>
+                                    <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ₹{lim.toLocaleString()}</p>
                                  </div>
                               </div>
                               

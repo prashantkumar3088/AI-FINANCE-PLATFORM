@@ -2,7 +2,7 @@
 
 import { Sidebar } from "./Sidebar"
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({ children }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[oklch(0.145_0_0)]">
       <Sidebar />

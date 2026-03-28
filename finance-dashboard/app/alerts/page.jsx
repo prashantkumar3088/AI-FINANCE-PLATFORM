@@ -10,7 +10,7 @@ import { Loader2, ShieldCheck } from "lucide-react"
 
 export default function AlertsPage() {
   const { user } = useAuth()
-  const [alerts, setAlerts] = useState<any[]>([])
+  const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -20,8 +20,7 @@ export default function AlertsPage() {
   }, [user])
 
   const fetchData = async () => {
-    // Show page instantly, load data in background
-    apiService.getAlerts(user!.uid)
+    apiService.getAlerts(user.uid)
       .then(data => setAlerts(data || []))
       .catch(error => console.error("Failed to fetch alerts:", error))
       .finally(() => setLoading(false))
@@ -30,10 +29,8 @@ export default function AlertsPage() {
   return (
     <DashboardLayout>
       <TopNavbar title="Fraud Detection Alerts" />
-      
       <div className="p-8 space-y-6 max-w-[1200px] mx-auto pb-24">
         <p className="text-[oklch(0.65_0.01_260)] mb-8 -mt-4">Review recent suspicious activities on your accounts</p>
-        
         {loading ? (
           <div className="h-64 flex flex-col items-center justify-center gap-4">
             <Loader2 className="animate-spin text-[oklch(0.50_0.20_250)]" size={40} />
@@ -52,7 +49,6 @@ export default function AlertsPage() {
              <p className="text-[oklch(0.65_0.01_260)] mt-2">All your recent transactions look secure and validated.</p>
           </div>
         )}
-
       </div>
     </DashboardLayout>
   )

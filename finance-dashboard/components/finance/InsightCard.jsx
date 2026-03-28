@@ -1,8 +1,7 @@
-import { Insight } from "@/types"
 import { PiggyBank, Zap, AlertTriangle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function InsightCard({ insight }: { insight: Insight }) {
+export function InsightCard({ insight }) {
   const getIconInfo = () => {
     switch (insight.type) {
       case "opportunity":

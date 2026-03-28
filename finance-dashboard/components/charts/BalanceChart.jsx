@@ -2,11 +2,7 @@
 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 
-interface BalanceChartProps {
-  data: Array<{ name: string; value: number }>
-}
-
-export function BalanceChart({ data }: BalanceChartProps) {
+export function BalanceChart({ data }) {
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -42,7 +38,7 @@ export function BalanceChart({ data }: BalanceChartProps) {
               color: 'oklch(0.985 0 0)'
             }}
             itemStyle={{ color: 'oklch(0.50 0.20 250)' }}
-            formatter={(value: any) => [`$${Number(value).toLocaleString()}`, 'Balance']}
+            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Balance']}
           />
           <Area 
             type="monotone" 

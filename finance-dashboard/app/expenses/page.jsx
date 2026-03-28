@@ -3,20 +3,19 @@
 import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
+import dynamic from 'next/dynamic'
 const BalanceChart = dynamic(() => import("@/components/charts/BalanceChart").then(mod => mod.BalanceChart), { ssr: false })
 const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
-import dynamic from 'next/dynamic'
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
-import { Transaction } from "@/types"
 import { TransactionTable } from "@/components/finance/TransactionTable"
 import { Button } from "@/components/ui/button"
 import { Plus, Loader2 } from "lucide-react"
 
 export default function ExpensesPage() {
   const { user } = useAuth()
-  const [expenses, setExpenses] = useState<Transaction[]>([])
-  const [chartData, setChartData] = useState<{ weekly: any[], monthly: any[] }>({ weekly: [], monthly: [] })
+  const [expenses, setExpenses] = useState([])
+  const [chartData, setChartData] = useState({ weekly: [], monthly: [] })
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   
@@ -35,9 +34,9 @@ export default function ExpensesPage() {
   const fetchExpenses = () => {
     // Load data in background — page renders immediately
     setLoading(true)
-    apiService.getExpenses(user!.uid)
+    apiService.getExpenses(user.uid)
       .then(data => {
-        const formatted = data.map((t: any) => ({
+        const formatted = data.map((t) => ({
           id: t.id,
           description: t.description || "No description",
           category: t.category,
@@ -51,7 +50,7 @@ export default function ExpensesPage() {
         
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         const weekly = days.map(day => ({ name: day, value: 0, budget: 500 }))
-        data.forEach((t: any) => {
+        data.forEach((t) => {
           const d = new Date(t.date)
           const day = days[d.getDay()]
           const w = weekly.find(x => x.name === day)
@@ -65,7 +64,7 @@ export default function ExpensesPage() {
       .finally(() => setLoading(false))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!user || !amount || !description) return
 

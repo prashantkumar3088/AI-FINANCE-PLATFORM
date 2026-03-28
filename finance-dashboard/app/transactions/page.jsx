@@ -6,12 +6,11 @@ import { TopNavbar } from "@/components/layout/TopNavbar"
 import { TransactionTable } from "@/components/finance/TransactionTable"
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
-import { Transaction } from "@/types"
 import { Loader2 } from "lucide-react"
 
 export default function TransactionsPage() {
   const { user } = useAuth()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -21,11 +20,10 @@ export default function TransactionsPage() {
   }, [user])
 
   const loadTransactions = () => {
-    // Render page instantly
     setLoading(true)
-    apiService.getExpenses(user!.uid)
+    apiService.getExpenses(user.uid)
       .then(expenses => {
-        const formatted = expenses.map((t: any) => ({
+        const formatted = expenses.map((t) => ({
           id: t.id,
           description: t.description || "No description",
           category: t.category,

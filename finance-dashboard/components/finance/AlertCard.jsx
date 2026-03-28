@@ -1,8 +1,7 @@
-import { Alert } from "@/types"
 import { MapPin, Clock, CreditCard, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function AlertCard({ alert }: { alert: Alert }) {
+export function AlertCard({ alert }) {
   const getStatusColor = () => {
     switch (alert.status) {
       case "critical": return "bg-[oklch(0.60_0.20_20)]"

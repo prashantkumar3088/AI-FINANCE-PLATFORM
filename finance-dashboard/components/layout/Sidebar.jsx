@@ -17,13 +17,13 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Insights", href: "/insights", icon: Compass },
-  { name: "Transactions", href: "/transactions", icon: Receipt },
-  { name: "Expenses", href: "/expenses", icon: Receipt },
-  { name: "Budgets", href: "/budgets", icon: PieChart },
-  { name: "Alerts", href: "/alerts", icon: ShieldAlert },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard/", icon: LayoutDashboard },
+  { name: "Insights", href: "/insights/", icon: Compass },
+  { name: "Transactions", href: "/transactions/", icon: Receipt },
+  { name: "Expenses", href: "/expenses/", icon: Receipt },
+  { name: "Budgets", href: "/budgets/", icon: PieChart },
+  { name: "Alerts", href: "/alerts/", icon: ShieldAlert },
+  { name: "Settings", href: "/settings/", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -32,7 +32,7 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col gap-4 border-r border-[oklch(0.20_0.02_260)] bg-[oklch(0.12_0.01_260)] p-4">
       <div className="flex shrink-0 items-center justify-between py-2 px-3">
-        <Link href="/dashboard" className="flex items-center gap-3">
+        <Link href="/dashboard/" className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[oklch(0.50_0.20_250)] text-[oklch(0.985_0_0)]">
             <TrendingUp size={20} />
           </div>
@@ -49,7 +49,7 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-2 mt-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname + "/" === item.href;
           return (
             <Link
               key={item.name}

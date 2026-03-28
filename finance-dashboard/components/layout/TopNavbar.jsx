@@ -4,7 +4,7 @@ import { Bell, Search, PlusCircle, Settings, User } from "lucide-react"
 import { useSearch } from "@/context/SearchContext"
 import { NotificationDropdown } from "./NotificationDropdown"
 
-export function TopNavbar({ title, actions }: { title?: string, actions?: React.ReactNode }) {
+export function TopNavbar({ title, actions }) {
   const { searchQuery, setSearchQuery } = useSearch()
 
   return (

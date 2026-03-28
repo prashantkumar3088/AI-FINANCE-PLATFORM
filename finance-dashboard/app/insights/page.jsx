@@ -12,8 +12,8 @@ import { Loader2, TrendingUp, TrendingDown, Target, HelpCircle, Sparkles } from 
 
 export default function InsightsPage() {
   const { user } = useAuth()
-  const [insights, setInsights] = useState<any[]>([])
-  const [advice, setAdvice] = useState<any>(null)
+  const [insights, setInsights] = useState([])
+  const [advice, setAdvice] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,15 +23,12 @@ export default function InsightsPage() {
   }, [user])
 
   const fetchData = async () => {
-    // Show UI instantly instead of blocking the whole page
     setLoading(false)
-
-    // Load AI in the background
     Promise.all([
-      apiService.getInsights(user!.uid),
-      apiService.getAdvice(user!.uid)
+      apiService.getInsights(user.uid),
+      apiService.getAdvice(user.uid)
     ]).then(([insightsData, advisorData]) => {
-      const formattedInsights = (insightsData.insights || []).map((ins: any, i: number) => ({
+      const formattedInsights = (insightsData.insights || []).map((ins, i) => ({
         id: i,
         title: ins.type === 'alert' ? "Spending Alert" : "Optimization Opportunity",
         description: ins.message,
@@ -39,7 +36,6 @@ export default function InsightsPage() {
         category: ins.category || 'General',
         impact: ins.type === 'alert' ? 'High' : 'Medium'
       }))
-
       setInsights(formattedInsights)
       setAdvice(advisorData)
     }).catch(error => {
@@ -50,7 +46,6 @@ export default function InsightsPage() {
   return (
     <DashboardLayout>
       <TopNavbar title="Financial Insights" />
-      
       <div className="p-8 space-y-8 max-w-[1200px] mx-auto pb-24">
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center gap-6">
@@ -64,7 +59,6 @@ export default function InsightsPage() {
                 <h2 className="text-2xl font-bold text-[oklch(0.985_0_0)] mb-1">Analysis Overview</h2>
                 <p className="text-[oklch(0.65_0.01_260)]">Personalized AI analysis based on your activity this month.</p>
               </div>
-              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -78,7 +72,6 @@ export default function InsightsPage() {
                     {advice?.advice || "Your AI Advisor is scanning for new patterns."}
                   </p>
                 </div>
-
                 <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6">
                    <div className="flex items-center gap-2 mb-4">
                       <Target className="text-[oklch(0.60_0.18_30)]" size={20} />
@@ -87,7 +80,6 @@ export default function InsightsPage() {
                    <h3 className="text-2xl font-bold text-[oklch(0.985_0_0)] mb-2">Steady Progress</h3>
                    <p className="text-sm text-[oklch(0.65_0.01_260)]">You are moving toward your long-term goals at a consistent pace.</p>
                 </div>
-
                 <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6">
                    <div className="flex items-center gap-2 mb-4">
                       <Sparkles className="text-[oklch(0.70_0.15_150)]" size={20} />
@@ -98,7 +90,6 @@ export default function InsightsPage() {
                 </div>
               </div>
             </section>
-
             <section>
               <h2 className="text-xl font-bold text-[oklch(0.985_0_0)] mb-4 mt-8">AI Recommendations</h2>
               <div className="space-y-4">

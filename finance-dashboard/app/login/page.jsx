@@ -18,7 +18,7 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -30,7 +30,7 @@ export default function AuthPage() {
         await createUserWithEmailAndPassword(auth, email, password);
       }
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -42,7 +42,7 @@ export default function AuthPage() {
     try {
       await signInWithPopup(auth, provider);
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     }
   };

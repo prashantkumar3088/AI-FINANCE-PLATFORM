@@ -1,21 +1,14 @@
 "use client";
 
 import React from "react"
-import { Transaction } from "@/types"
 import { Search, Filter, MoreVertical, ShoppingCart, Briefcase, Coffee, TrendingUp, ShoppingBag } from "lucide-react"
-
 import { useSearch } from "@/context/SearchContext"
 
-interface TransactionTableProps {
-  transactions: Transaction[]
-  title?: string
-}
-
-export function TransactionTable({ transactions, title = "Recent Transactions" }: TransactionTableProps) {
+export function TransactionTable({ transactions, title = "Recent Transactions" }) {
   const { searchQuery: globalSearch } = useSearch()
   const [localSearch, setLocalSearch] = React.useState("")
 
-  const getIcon = (iconName: string) => {
+  const getIcon = (iconName) => {
     switch (iconName) {
       case 'shopping-cart': return <ShoppingCart size={20} />
       case 'briefcase': return <Briefcase size={20} />

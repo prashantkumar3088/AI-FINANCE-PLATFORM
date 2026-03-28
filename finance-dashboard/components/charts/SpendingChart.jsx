@@ -2,12 +2,7 @@
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell, YAxis } from "recharts"
 
-interface SpendingChartProps {
-  data: Array<{ name: string; value: number; budget: number }>
-}
-
-export function SpendingChart({ data }: SpendingChartProps) {
-  // Use a softer blue for standard bars and bright blue for the highest/active
+export function SpendingChart({ data }) {
   const standardColor = "oklch(0.25 0.05 250)"
   const highlightColor = "oklch(0.50 0.20 250)"
   const overBudgetColor = "oklch(0.60 0.20 20)"
@@ -34,7 +29,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
               borderRadius: '8px',
               color: 'oklch(0.985 0 0)'
             }}
-            formatter={(value: any, name: any) => [
+            formatter={(value, name) => [
               `$${value}`, 
               name === 'value' ? 'Spent' : 'Budget'
             ]}
@@ -45,7 +40,6 @@ export function SpendingChart({ data }: SpendingChartProps) {
             barSize={40}
           >
             {data.map((entry, index) => {
-              // Highlight Saturday (index 5 in mock data) as shown in screenshot
               let color = index === 5 ? highlightColor : standardColor;
               if (entry.value > entry.budget) {
                 color = overBudgetColor;

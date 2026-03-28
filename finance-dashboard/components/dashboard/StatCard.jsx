@@ -1,14 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { TrendingUp, TrendingDown } from "lucide-react"
 
-interface StatCardProps {
-  title: string
-  value: string
-  trend: number
-  trendLabel?: string
-}
-
-export function StatCard({ title, value, trend, trendLabel }: StatCardProps) {
+export function StatCard({ title, value, trend, trendLabel }) {
   const isPositive = trend >= 0
 
   return (

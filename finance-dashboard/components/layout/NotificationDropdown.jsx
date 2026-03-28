@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,14 +21,13 @@ export function NotificationDropdown() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch both insights and alerts to show as notifications
       const [insightsData, alertsData] = await Promise.all([
-        apiService.getInsights(user!.uid),
-        apiService.getAlerts(user!.uid)
+        apiService.getInsights(user.uid),
+        apiService.getAlerts(user.uid)
       ]);
 
       const formatted = [
-        ...(insightsData.insights || []).map((ins: any, i: number) => ({
+        ...(insightsData.insights || []).map((ins, i) => ({
           id: `ins-${i}`,
           title: "AI Insight",
           message: ins.message,
@@ -36,7 +35,7 @@ export function NotificationDropdown() {
           icon: <Sparkles size={16} />,
           time: "Just now"
         })),
-        ...(alertsData || []).map((alert: any) => ({
+        ...(alertsData || []).map((alert) => ({
           id: alert.id,
           title: "Fraud Alert",
           message: alert.message,
