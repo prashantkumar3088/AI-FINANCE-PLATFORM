@@ -42,7 +42,7 @@ export function AlertCard({ alert }) {
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-[oklch(0.985_0_0)] mb-1">
-                  ${alert.amount.toFixed(2)} at {alert.merchant}
+                  ${(alert.amount ?? 0).toFixed(2)} at {alert.merchant ?? 'Unknown Merchant'}
                 </h3>
               </div>
               <div className="text-right flex items-center gap-2 md:block">

@@ -12,14 +12,18 @@ import { Button } from "@/components/ui/button"
 import { Plus, Minus, TrendingUp, ArrowRightLeft, Sparkles, Loader2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
+import { useRouter } from "next/navigation"
+
+const MONTHLY_INCOME = 8250
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [data, setData] = useState({
     transactions: [],
     totalExpenses: 0,
     weeklySpending: [],
-    income: 8250,
+    income: MONTHLY_INCOME,
     loading: true
   })
 
@@ -42,10 +46,10 @@ export default function DashboardPage() {
         category: t.category,
         date: new Date(t.date).toLocaleDateString(),
         amount: t.amount,
-        icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
-              t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
-        color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
-               t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
+        icon: t.category?.toLowerCase().includes('food') ? 'coffee' : 
+              t.category?.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
+        color: t.category?.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
+               t.category?.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
       }))
 
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -62,7 +66,7 @@ export default function DashboardPage() {
         transactions: formattedTransactions,
         totalExpenses: totalExp,
         weeklySpending: weeklyData,
-        income: 8250,
+        income: MONTHLY_INCOME,
         loading: false
       }))
     } catch (error) {
@@ -79,7 +83,7 @@ export default function DashboardPage() {
         title="Dashboard" 
         actions={
           <Button 
-            onClick={() => window.location.href = '/expenses'}
+            onClick={() => router.push('/expenses')}
             className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2 rounded-full px-6 shadow-lg shadow-[oklch(0.50_0.20_250)]/20"
           >
             <Plus size={16} /> Quick Add
@@ -117,13 +121,13 @@ export default function DashboardPage() {
                     { name: 'Mar', value: 2000 },
                     { name: 'Apr', value: 2780 },
                     { name: 'May', value: 1890 },
-                    { name: 'Jun', value: data.income - data.totalExpenses },
+                    { name: 'Jun', value: Math.max(0, data.income - data.totalExpenses) },
                   ]} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div
-                    onClick={() => window.location.href = '/insights'}
+                    onClick={() => router.push('/insights')}
                     className="rounded-2xl bg-gradient-to-br from-[oklch(0.22_0.05_270)] to-[oklch(0.18_0.01_260)] border border-[oklch(0.35_0.10_270)] p-6 shadow-sm flex flex-col cursor-pointer hover:border-[oklch(0.50_0.20_250)] transition-all group"
                   >
                     <div className="flex items-center justify-between mb-4">
@@ -142,29 +146,41 @@ export default function DashboardPage() {
                   <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6">Quick Actions</h3>
                     <div className="grid grid-cols-2 gap-4 h-full pb-8">
-                      <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors">
+                      <button
+                        onClick={() => router.push('/expenses')}
+                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors"
+                      >
                         <div className="h-10 w-10 rounded-full bg-[oklch(0.25_0.02_260)] flex items-center justify-center text-[oklch(0.985_0_0)]">
                           <Plus size={20} />
                         </div>
-                        <span className="text-sm font-medium">Add Income</span>
+                        <span className="text-sm font-medium">Add Expense</span>
                       </button>
-                      <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors">
+                      <button
+                        onClick={() => router.push('/transactions')}
+                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors"
+                      >
                         <div className="h-10 w-10 rounded-full bg-[oklch(0.25_0.02_260)] flex items-center justify-center text-[oklch(0.985_0_0)]">
                           <Minus size={20} />
                         </div>
-                        <span className="text-sm font-medium">Add Expense</span>
+                        <span className="text-sm font-medium">Transactions</span>
                       </button>
-                      <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors">
+                      <button
+                        onClick={() => router.push('/budgets')}
+                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors"
+                      >
                         <div className="h-10 w-10 rounded-full bg-[oklch(0.25_0.02_260)] flex items-center justify-center text-[oklch(0.985_0_0)]">
                           <TrendingUp size={20} />
                         </div>
-                        <span className="text-sm font-medium">Investment</span>
+                        <span className="text-sm font-medium">Budgets</span>
                       </button>
-                      <button className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors">
+                      <button
+                        onClick={() => router.push('/alerts')}
+                        className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:border-[oklch(0.50_0.20_250)] transition-colors"
+                      >
                          <div className="h-10 w-10 rounded-full bg-[oklch(0.25_0.02_260)] flex items-center justify-center text-[oklch(0.985_0_0)]">
                           <ArrowRightLeft size={20} />
                         </div>
-                        <span className="text-sm font-medium">Transfer</span>
+                        <span className="text-sm font-medium">Alerts</span>
                       </button>
                     </div>
                   </div>
@@ -192,7 +208,7 @@ export default function DashboardPage() {
                         <span className="text-[oklch(0.50_0.20_250)] font-bold">${data.totalExpenses.toLocaleString()}</span>
                       </div>
                       <div className="h-2 w-full bg-[oklch(0.145_0_0)] rounded-full overflow-hidden">
-                        <div className="h-full bg-[oklch(0.50_0.20_250)] rounded-full" style={{ width: `${(data.totalExpenses / data.income * 100)}%` }}></div>
+                        <div className="h-full bg-[oklch(0.50_0.20_250)] rounded-full" style={{ width: `${Math.min((data.totalExpenses / data.income * 100), 100)}%` }}></div>
                       </div>
                     </div>
                   </div>

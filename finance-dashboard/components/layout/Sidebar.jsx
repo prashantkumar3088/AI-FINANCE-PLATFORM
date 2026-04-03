@@ -73,19 +73,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto">
-        <div className="rounded-xl bg-[oklch(0.18_0.01_260)] p-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[oklch(0.65_0.01_260)] mb-1">
-            PRO PLAN
-          </p>
-          <p className="text-sm text-[oklch(0.985_0_0)] mb-3 leading-tight">
-            Unlock advanced AI predictive analytics.
-          </p>
-          <button className="w-full rounded-lg bg-[oklch(0.50_0.20_250)] py-2 text-sm font-medium text-[oklch(0.985_0_0)] transition-colors hover:bg-[oklch(0.55_0.20_250)] hover:shadow-lg shadow-[oklch(0.50_0.20_250)/20%]">
-            Upgrade Now
-          </button>
-        </div>
-      </div>
+      <div className="mt-auto" />
+
     </div>
   );
 }

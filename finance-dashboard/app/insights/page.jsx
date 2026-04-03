@@ -23,7 +23,7 @@ export default function InsightsPage() {
   }, [user])
 
   const fetchData = async () => {
-    setLoading(false)
+    setLoading(true)
     Promise.all([
       apiService.getInsights(user.uid),
       apiService.getAdvice(user.uid)
@@ -40,7 +40,7 @@ export default function InsightsPage() {
       setAdvice(advisorData)
     }).catch(error => {
       console.error("Failed to fetch insights:", error)
-    })
+    }).finally(() => setLoading(false))
   }
 
   return (

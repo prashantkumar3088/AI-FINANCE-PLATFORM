@@ -29,10 +29,10 @@ export default function TransactionsPage() {
           category: t.category,
           date: new Date(t.date).toLocaleDateString(),
           amount: t.amount,
-          icon: t.category.toLowerCase().includes('food') ? 'coffee' : 
-                t.category.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
-          color: t.category.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
-                 t.category.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
+          icon: t.category?.toLowerCase().includes('food') ? 'coffee' : 
+                t.category?.toLowerCase().includes('shop') ? 'shopping-bag' : 'shopping-cart',
+          color: t.category?.toLowerCase().includes('food') ? 'bg-orange-500/20 text-orange-500' : 
+                 t.category?.toLowerCase().includes('shop') ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'
         }))
         setTransactions(formatted)
       })

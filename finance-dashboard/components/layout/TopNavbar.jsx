@@ -1,11 +1,13 @@
 "use client";
 
-import { Bell, Search, PlusCircle, Settings, User } from "lucide-react"
+import { Bell, Search, User } from "lucide-react"
 import { useSearch } from "@/context/SearchContext"
 import { NotificationDropdown } from "./NotificationDropdown"
+import { useRouter } from "next/navigation"
 
 export function TopNavbar({ title, actions }) {
   const { searchQuery, setSearchQuery } = useSearch()
+  const router = useRouter()
 
   return (
     <div className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-[oklch(0.20_0.02_260)] bg-[oklch(0.145_0_0)/80%] px-8 backdrop-blur-md">
@@ -29,7 +31,11 @@ export function TopNavbar({ title, actions }) {
           <NotificationDropdown />
         </div>
 
-        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[oklch(0.60_0.18_30)]/20 text-[oklch(0.60_0.18_30)] transition-colors hover:bg-[oklch(0.60_0.18_30)] hover:text-white">
+        <button
+          onClick={() => router.push('/settings')}
+          title="Account Settings"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[oklch(0.60_0.18_30)]/20 text-[oklch(0.60_0.18_30)] transition-colors hover:bg-[oklch(0.60_0.18_30)] hover:text-white"
+        >
           <User className="h-5 w-5" />
         </button>
         
