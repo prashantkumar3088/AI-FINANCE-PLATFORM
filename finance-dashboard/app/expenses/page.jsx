@@ -32,7 +32,6 @@ export default function ExpensesPage() {
   }, [user])
 
   const fetchExpenses = () => {
-    // Load data in background — page renders immediately
     setLoading(true)
     apiService.getExpenses(user.uid)
       .then(data => {
