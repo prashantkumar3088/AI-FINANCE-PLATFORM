@@ -14,8 +14,6 @@ import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
 import { useRouter } from "next/navigation"
 
-const MONTHLY_INCOME = 8250
-
 export default function DashboardPage() {
   const { user } = useAuth()
   const router = useRouter()
@@ -23,7 +21,7 @@ export default function DashboardPage() {
     transactions: [],
     totalExpenses: 0,
     weeklySpending: [],
-    income: MONTHLY_INCOME,
+    income: 8250,
     loading: true
   })
 
@@ -61,12 +59,15 @@ export default function DashboardPage() {
         if (weekDay) weekDay.value += t.amount
       })
 
+      const storedIncome = localStorage.getItem('monthlyIncome')
+      const currentIncome = storedIncome ? parseFloat(storedIncome) : 8250;
+
       setData(prev => ({
         ...prev,
         transactions: formattedTransactions,
         totalExpenses: totalExp,
         weeklySpending: weeklyData,
-        income: MONTHLY_INCOME,
+        income: currentIncome,
         loading: false
       }))
     } catch (error) {
@@ -101,7 +102,26 @@ export default function DashboardPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCard title="TOTAL BALANCE" value={`₹${(data.income - data.totalExpenses).toLocaleString()}`} trend={2.4} trendLabel="vs last month" />
-              <StatCard title="MONTHLY INCOME" value={`₹${data.income.toLocaleString()}`} trend={0} />
+              <StatCard 
+                title="MONTHLY INCOME" 
+                value={`₹${data.income.toLocaleString()}`} 
+                trend={0} 
+                action={
+                  <button 
+                    title="Update income"
+                    onClick={() => {
+                      const newIncome = prompt("Enter your new monthly income:", data.income);
+                      if (newIncome && !isNaN(newIncome)) {
+                        localStorage.setItem('monthlyIncome', newIncome);
+                        setData(prev => ({ ...prev, income: parseFloat(newIncome) }));
+                      }
+                    }}
+                    className="h-6 w-6 rounded-full bg-[oklch(0.50_0.20_250)]/10 text-[oklch(0.50_0.20_250)] border border-[oklch(0.50_0.20_250)]/30 flex items-center justify-center hover:bg-[oklch(0.50_0.20_250)] hover:text-white transition-all hover:scale-110"
+                  >
+                    <Plus size={14} />
+                  </button>
+                }
+              />
               <StatCard title="MONTHLY EXPENSES" value={`₹${data.totalExpenses.toLocaleString()}`} trend={-0.5} />
               <StatCard title="SAVINGS RATE" value={`${savingsRate}%`} trend={3.0} />
             </div>
