@@ -104,7 +104,16 @@ export default function BudgetsPage() {
                </div>
 
                <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
-                  <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6">Category Allocations</h3>
+                  <div className="flex items-center justify-between mb-6">
+                     <h3 className="text-lg font-bold text-[oklch(0.985_0_0)]">Category Allocations</h3>
+                     <button
+                       onClick={() => setShowModal(true)}
+                       className="h-8 w-8 rounded-full bg-[oklch(0.50_0.20_250)]/10 border border-[oklch(0.50_0.20_250)] text-[oklch(0.50_0.20_250)] flex items-center justify-center hover:bg-[oklch(0.50_0.20_250)] hover:text-white transition-all hover:scale-105"
+                       title="Add Category"
+                     >
+                       <Plus size={16} />
+                     </button>
+                  </div>
                   <div className="space-y-8">
                      {budgets.length > 0 ? budgets.map((budget) => {
                         const spent = budget.spent ?? 0;
@@ -153,8 +162,14 @@ export default function BudgetsPage() {
                            </div>
                         )
                      }) : (
-                        <div className="text-center py-12 text-[oklch(0.65_0.01_260)]">
-                           No budgets set yet. Start by adding a limit for a category!
+                        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-500">
+                           <button 
+                             onClick={() => setShowModal(true)}
+                             className="h-16 w-16 mb-4 rounded-full bg-[oklch(0.18_0.01_260)] border border-dashed text-[oklch(0.65_0.01_260)] border-[oklch(0.25_0.02_260)] hover:border-[oklch(0.50_0.20_250)] hover:text-white flex items-center justify-center hover:bg-[oklch(0.50_0.20_250)] transition-all hover:scale-110 shadow-lg"
+                           >
+                             <Plus size={32} />
+                           </button>
+                           <p className="text-[oklch(0.65_0.01_260)] font-medium">No budgets set yet. Start by adding a limit for a category!</p>
                         </div>
                      )}
                   </div>
@@ -244,4 +259,5 @@ export default function BudgetsPage() {
     </DashboardLayout>
   )
 }
+
 
