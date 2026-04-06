@@ -28,7 +28,10 @@ export default function TransactionsPage() {
     setLoading(true)
     apiService.getAllTransactions(user.uid)
       .then(expenses => {
-        const formatted = expenses.map((t) => ({
+        // Filter out transactions with invalid or missing dates
+        const validExpenses = expenses.filter(t => t.date && !isNaN(new Date(t.date).getTime()));
+        
+        const formatted = validExpenses.map((t) => ({
           id: t.id,
           description: t.description || "No description",
           category: t.category,
