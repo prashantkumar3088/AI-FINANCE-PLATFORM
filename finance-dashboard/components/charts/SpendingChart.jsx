@@ -30,7 +30,7 @@ export function SpendingChart({ data }) {
               color: 'oklch(0.985 0 0)'
             }}
             formatter={(value, name) => [
-              `$${value}`, 
+              `\u20b9${value}`, 
               name === 'value' ? 'Spent' : 'Budget'
             ]}
           />

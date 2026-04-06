@@ -28,7 +28,7 @@ export function BalanceChart({ data }) {
             axisLine={false} 
             tickLine={false} 
             tick={{ fill: 'oklch(0.65 0.01 260)', fontSize: 12 }}
-            tickFormatter={(value) => `$${value / 1000}k`}
+            tickFormatter={(value) => `₹${value / 1000}k`}
           />
           <Tooltip 
             contentStyle={{ 
@@ -38,7 +38,7 @@ export function BalanceChart({ data }) {
               color: 'oklch(0.985 0 0)'
             }}
             itemStyle={{ color: 'oklch(0.50 0.20 250)' }}
-            formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Balance']}
+            formatter={(value) => [`₹${Number(value).toLocaleString()}`, 'Balance']}
           />
           <Area 
             type="monotone" 

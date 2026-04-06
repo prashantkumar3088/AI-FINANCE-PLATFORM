@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { TopNavbar } from "@/components/layout/TopNavbar";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,19 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [saved, setSaved] = useState(false);
-  const [notifications, setNotifications] = useState({
-    fraudAlerts: true,
-    budgetWarnings: true,
-    weeklyReport: false,
-    aiInsights: true,
+  const [notifications, setNotifications] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("finai_notification_prefs");
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return {
+      fraudAlerts: true,
+      budgetWarnings: true,
+      weeklyReport: false,
+      aiInsights: true,
+    };
   });
 
   const handleSignOut = async () => {
@@ -27,6 +35,9 @@ export default function SettingsPage() {
   };
 
   const handleSave = () => {
+    try {
+      localStorage.setItem("finai_notification_prefs", JSON.stringify(notifications));
+    } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };

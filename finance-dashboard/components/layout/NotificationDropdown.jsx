@@ -6,6 +6,9 @@ import { useAuth } from "@/context/AuthContext";
 import { apiService } from "@/lib/api-service";
 import { cn } from "@/lib/utils";
 
+// Module-level cache: avoids hitting the slow AI API on every bell click
+const notifCache = { data: null, expiresAt: 0 };
+
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
@@ -19,6 +22,12 @@ export function NotificationDropdown() {
   }, [user, isOpen]);
 
   const fetchData = async () => {
+    // Use cached data if available and less than 5 minutes old
+    if (notifCache.data && Date.now() < notifCache.expiresAt) {
+      setNotifications(notifCache.data);
+      return;
+    }
+
     try {
       setLoading(true);
       const [insightsData, alertsData] = await Promise.all([
@@ -45,7 +54,11 @@ export function NotificationDropdown() {
         }))
       ];
 
-      setNotifications(formatted.sort((a,b) => 0.5 - Math.random()).slice(0, 5));
+      const result = formatted.sort((a,b) => 0.5 - Math.random()).slice(0, 5);
+      // Cache for 5 minutes
+      notifCache.data = result;
+      notifCache.expiresAt = Date.now() + 5 * 60 * 1000;
+      setNotifications(result);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {

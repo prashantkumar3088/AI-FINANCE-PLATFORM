@@ -125,7 +125,7 @@ export default function ExpensesPage() {
                <div className="absolute inset-0 rounded-full border-[16px] border-[oklch(0.65_0.15_300)] border-t-transparent border-l-transparent border-b-transparent" style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 50%)', transform: 'rotate(-25deg)'}}></div>
                
                <div className="h-48 w-48 rounded-full bg-[oklch(0.18_0.01_260)] z-10 flex flex-col items-center justify-center">
-                 <span className="text-2xl font-bold text-[oklch(0.985_0_0)]">${expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</span>
+                 <span className="text-2xl font-bold text-[oklch(0.985_0_0)]">₹{expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}</span>
                  <span className="text-sm text-[oklch(0.65_0.01_260)]">Total Spent</span>
                </div>
              </div>
@@ -155,7 +155,7 @@ export default function ExpensesPage() {
                 <div>
                   <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Amount</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.65_0.01_260)]">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.65_0.01_260)]">₹</span>
                     <input 
                       type="number" 
                       step="0.01"

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
@@ -91,15 +91,15 @@ export default function BudgetsPage() {
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-5">
                      <p className="text-xs font-semibold tracking-wider text-[oklch(0.65_0.01_260)] uppercase mb-2">Total Budget</p>
-                     <h3 className="text-3xl font-bold text-[oklch(0.985_0_0)]">$  {totals.limit.toLocaleString()}</h3>
+                     <h3 className="text-3xl font-bold text-[oklch(0.985_0_0)]">₹  {totals.limit.toLocaleString()}</h3>
                   </div>
                   <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-5">
                      <p className="text-xs font-semibold tracking-wider text-[oklch(0.65_0.01_260)] uppercase mb-2">Spent</p>
-                     <h3 className="text-3xl font-bold text-[oklch(0.50_0.20_250)]">$  {totals.spent.toLocaleString()}</h3>
+                     <h3 className="text-3xl font-bold text-[oklch(0.50_0.20_250)]">₹  {totals.spent.toLocaleString()}</h3>
                   </div>
                   <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-5">
                      <p className="text-xs font-semibold tracking-wider text-[oklch(0.65_0.01_260)] uppercase mb-2">Remaining</p>
-                     <h3 className="text-3xl font-bold text-[oklch(0.70_0.15_150)]">$  {(totals.limit - totals.spent).toLocaleString()}</h3>
+                     <h3 className="text-3xl font-bold text-[oklch(0.70_0.15_150)]">₹  {(totals.limit - totals.spent).toLocaleString()}</h3>
                   </div>
                </div>
 
@@ -136,9 +136,9 @@ export default function BudgetsPage() {
                                  </div>
                                  <div className="text-right">
                                     <p className={`font-bold text-lg ${isOverBudget ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'}`}>
-                                       ${spent.toLocaleString()}
+                                       ₹{spent.toLocaleString()}
                                     </p>
-                                    <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ${lim.toLocaleString()}</p>
+                                    <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ₹{lim.toLocaleString()}</p>
                                  </div>
                               </div>
                               
@@ -174,7 +174,7 @@ export default function BudgetsPage() {
                            <TrendingUp size={16} className="text-[oklch(0.70_0.15_150)]" />
                            <h4 className="font-semibold text-[oklch(0.985_0_0)] text-sm">Budget Tip</h4>
                         </div>
-                        <p className="text-xs text-[oklch(0.65_0.01_260)] mb-3 leading-relaxed">Your spending on food is $2,000 above your usual. Consider a lower threshold next month.</p>
+                        <p className="text-xs text-[oklch(0.65_0.01_260)] mb-3 leading-relaxed">Your spending on food is ₹2,000 above your usual. Consider a lower threshold next month.</p>
                      </div>
                   </div>
                </div>

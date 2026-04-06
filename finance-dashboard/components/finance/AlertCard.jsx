@@ -1,9 +1,9 @@
 import { MapPin, Clock, CreditCard, ShieldAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function AlertCard({ alert }) {
+export function AlertCard({ alert: alertData }) {
   const getStatusColor = () => {
-    switch (alert.status) {
+    switch (alertData.status) {
       case "critical": return "bg-[oklch(0.60_0.20_20)]"
       case "medium": return "bg-[oklch(0.60_0.18_30)]"
       case "low": return "bg-[oklch(0.70_0.15_150)]"
@@ -21,7 +21,7 @@ export function AlertCard({ alert }) {
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="h-8 w-8 rounded-full bg-[oklch(0.18_0.01_260)]/80 backdrop-blur flex items-center justify-center">
-                <ShieldAlert size={16} className={alert.status === 'critical' ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'} />
+                <ShieldAlert size={16} className={alertData.status === 'critical' ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'} />
               </div>
             </div>
           </div>
@@ -31,53 +31,65 @@ export function AlertCard({ alert }) {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
-                    alert.status === 'critical' ? 'bg-[oklch(0.60_0.20_20)]/20 text-[oklch(0.60_0.20_20)]' : 
-                    alert.status === 'medium' ? 'bg-[oklch(0.60_0.18_30)]/20 text-[oklch(0.60_0.18_30)]' : 
+                    alertData.status === 'critical' ? 'bg-[oklch(0.60_0.20_20)]/20 text-[oklch(0.60_0.20_20)]' : 
+                    alertData.status === 'medium' ? 'bg-[oklch(0.60_0.18_30)]/20 text-[oklch(0.60_0.18_30)]' : 
                     'bg-[oklch(0.70_0.15_150)]/20 text-[oklch(0.70_0.15_150)]'
                   }`}>
-                    {alert.status} Risk
+                    {alertData.status} Risk
                   </span>
                   <span className="text-xs text-[oklch(0.65_0.01_260)] flex items-center gap-1">
-                    • {alert.timestamp}
+                    • {alertData.timestamp}
                   </span>
                 </div>
                 <h3 className="text-xl font-bold text-[oklch(0.985_0_0)] mb-1">
-                  ${(alert.amount ?? 0).toFixed(2)} at {alert.merchant ?? 'Unknown Merchant'}
+                  ₹{(alertData.amount ?? 0).toFixed(2)} at {alertData.merchant ?? 'Unknown Merchant'}
                 </h3>
               </div>
               <div className="text-right flex items-center gap-2 md:block">
                  <p className="text-sm font-medium text-[oklch(0.985_0_0)]">Card ending in</p>
-                 <p className="text-sm font-bold text-[oklch(0.65_0.01_260)]">{alert.cardType} • {alert.cardEnding}</p>
+                 <p className="text-sm font-bold text-[oklch(0.65_0.01_260)]">{alertData.cardType} • {alertData.cardEnding}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
               <div>
                 <p className="text-[oklch(0.65_0.01_260)] mb-1 text-xs uppercase tracking-wider">Merchant</p>
-                <p className="text-[oklch(0.985_0_0)] font-medium">{alert.merchant}</p>
+                <p className="text-[oklch(0.985_0_0)] font-medium">{alertData.merchant}</p>
               </div>
               <div>
                 <p className="text-[oklch(0.65_0.01_260)] mb-1 text-xs uppercase tracking-wider">Location</p>
-                <p className="text-[oklch(0.985_0_0)] font-medium">{alert.location}</p>
+                <p className="text-[oklch(0.985_0_0)] font-medium">{alertData.location}</p>
               </div>
               <div>
                 <p className="text-[oklch(0.65_0.01_260)] mb-1 text-xs uppercase tracking-wider flex items-center gap-1">
                    Time
                 </p>
-                <p className="text-[oklch(0.985_0_0)] font-medium">{alert.time}</p>
+                <p className="text-[oklch(0.985_0_0)] font-medium">{alertData.time}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              {alert.status === "critical" || alert.status === "medium" ? (
+              {alertData.status === "critical" || alertData.status === "medium" ? (
                 <>
-                  <Button variant="destructive" className="bg-[oklch(0.60_0.20_20)] hover:bg-[oklch(0.60_0.20_20)]/90 text-[oklch(0.985_0_0)]">
+                  <Button
+                    variant="destructive"
+                    className="bg-[oklch(0.60_0.20_20)] hover:bg-[oklch(0.60_0.20_20)]/90 text-[oklch(0.985_0_0)]"
+                    onClick={() => window.alert("Fraud report submitted. Our team will review this transaction within 24 hours.")}
+                  >
                     Report Fraud
                   </Button>
-                  <Button variant="secondary" className="bg-[oklch(0.25_0.02_260)] hover:bg-[oklch(0.25_0.02_260)]/80 text-[oklch(0.985_0_0)]">
+                  <Button
+                    variant="secondary"
+                    className="bg-[oklch(0.25_0.02_260)] hover:bg-[oklch(0.25_0.02_260)]/80 text-[oklch(0.985_0_0)]"
+                    onClick={() => window.alert("Card block request submitted. Your card ending in " + (alertData.cardEnding || "****") + " will be blocked within minutes.")}
+                  >
                     Block Card
                   </Button>
-                  <Button variant="ghost" className="text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:bg-transparent px-2">
+                  <Button
+                    variant="ghost"
+                    className="text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] hover:bg-transparent px-2"
+                    onClick={() => window.alert("Transaction marked as safe. This alert has been dismissed.")}
+                  >
                     Mark as Safe
                   </Button>
                 </>

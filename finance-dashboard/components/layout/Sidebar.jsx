@@ -12,6 +12,7 @@ import {
   HelpCircle,
   AlertTriangle,
   ShieldAlert,
+  Wallet,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard/", icon: LayoutDashboard },
   { name: "Insights", href: "/insights/", icon: Compass },
   { name: "Transactions", href: "/transactions/", icon: Receipt },
-  { name: "Expenses", href: "/expenses/", icon: Receipt },
+  { name: "Expenses", href: "/expenses/", icon: Wallet },
   { name: "Budgets", href: "/budgets/", icon: PieChart },
   { name: "Alerts", href: "/alerts/", icon: ShieldAlert },
   { name: "Settings", href: "/settings/", icon: Settings },

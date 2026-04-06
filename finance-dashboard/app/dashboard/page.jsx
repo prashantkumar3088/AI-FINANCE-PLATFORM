@@ -100,9 +100,9 @@ export default function DashboardPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard title="TOTAL BALANCE" value={`$${(data.income - data.totalExpenses).toLocaleString()}`} trend={2.4} trendLabel="vs last month" />
-              <StatCard title="MONTHLY INCOME" value={`$${data.income.toLocaleString()}`} trend={0} />
-              <StatCard title="MONTHLY EXPENSES" value={`$${data.totalExpenses.toLocaleString()}`} trend={-0.5} />
+              <StatCard title="TOTAL BALANCE" value={`₹${(data.income - data.totalExpenses).toLocaleString()}`} trend={2.4} trendLabel="vs last month" />
+              <StatCard title="MONTHLY INCOME" value={`₹${data.income.toLocaleString()}`} trend={0} />
+              <StatCard title="MONTHLY EXPENSES" value={`₹${data.totalExpenses.toLocaleString()}`} trend={-0.5} />
               <StatCard title="SAVINGS RATE" value={`${savingsRate}%`} trend={3.0} />
             </div>
 
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                     <div>
                       <div className="flex justify-between text-sm mb-1 text-[oklch(0.65_0.01_260)] font-medium">
                         <span>Income</span>
-                        <span className="text-[oklch(0.70_0.15_150)] font-bold">${data.income.toLocaleString()}</span>
+                        <span className="text-[oklch(0.70_0.15_150)] font-bold">₹{data.income.toLocaleString()}</span>
                       </div>
                       <div className="h-2 w-full bg-[oklch(0.145_0_0)] rounded-full overflow-hidden">
                         <div className="h-full bg-[oklch(0.70_0.15_150)] rounded-full" style={{ width: '100%' }}></div>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
                     <div>
                       <div className="flex justify-between text-sm mb-1 text-[oklch(0.65_0.01_260)] font-medium">
                         <span>Expenses</span>
-                        <span className="text-[oklch(0.50_0.20_250)] font-bold">${data.totalExpenses.toLocaleString()}</span>
+                        <span className="text-[oklch(0.50_0.20_250)] font-bold">₹{data.totalExpenses.toLocaleString()}</span>
                       </div>
                       <div className="h-2 w-full bg-[oklch(0.145_0_0)] rounded-full overflow-hidden">
                         <div className="h-full bg-[oklch(0.50_0.20_250)] rounded-full" style={{ width: `${Math.min((data.totalExpenses / data.income * 100), 100)}%` }}></div>
