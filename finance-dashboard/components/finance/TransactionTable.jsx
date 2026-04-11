@@ -208,46 +208,46 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
                     {t.amount > 0 ? '+' : '-'}₹{Math.abs(t.amount).toFixed(2)}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-center relative">
-                  <button
-                    onClick={() => setActiveMenu(activeMenu === t.id ? null : t.id)}
-                    className="text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[oklch(0.25_0.02_260)] mx-auto"
-                  >
-                    <MoreVertical size={16} />
-                  </button>
+                  <td className="px-5 py-4 text-center relative">
+                    <button
+                      onClick={() => setActiveMenu(activeMenu === t.id ? null : t.id)}
+                      className="text-[oklch(0.65_0.01_260)] hover:text-[oklch(0.985_0_0)] h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[oklch(0.25_0.02_260)] mx-auto"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
 
-                  {activeMenu === t.id && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                      <div className="absolute right-2 top-full mt-1 z-20 w-44 rounded-xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                        <button
-                          onClick={() => handleCopy(t)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] transition-colors"
-                        >
-                          {copiedId === t.id ? <Check size={14} className="text-[oklch(0.70_0.15_150)]" /> : <Copy size={14} />}
-                          {copiedId === t.id ? "Copied!" : "Copy Details"}
-                        </button>
-                        <button
-                          onClick={() => { setActiveMenu(null) }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] transition-colors"
-                        >
-                          <Eye size={14} />
-                          Mark Reviewed
-                        </button>
-                        <div className="h-px bg-[oklch(0.25_0.02_260)]" />
-                        <button
-                          onClick={() => handleDismiss(t.id)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.60_0.20_20)] hover:bg-[oklch(0.60_0.20_20)]/10 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                          Delete Transaction
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    {activeMenu === t.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
+                        <div className={`absolute right-2 z-20 w-44 rounded-xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] shadow-xl overflow-hidden animate-in fade-in duration-150 ${index >= filtered.length - 2 && filtered.length > 2 ? 'bottom-full mb-1 slide-in-from-bottom-1' : 'top-full mt-1 slide-in-from-top-1'}`}>
+                          <button
+                            onClick={() => handleCopy(t)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] transition-colors"
+                          >
+                            {copiedId === t.id ? <Check size={14} className="text-[oklch(0.70_0.15_150)]" /> : <Copy size={14} />}
+                            {copiedId === t.id ? "Copied!" : "Copy Details"}
+                          </button>
+                          <button
+                            onClick={() => { setActiveMenu(null) }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] transition-colors"
+                          >
+                            <Eye size={14} />
+                            Mark Reviewed
+                          </button>
+                          <div className="h-px bg-[oklch(0.25_0.02_260)]" />
+                          <button
+                            onClick={() => handleDismiss(t.id)}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.60_0.20_20)] hover:bg-[oklch(0.60_0.20_20)]/10 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                            Delete Transaction
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

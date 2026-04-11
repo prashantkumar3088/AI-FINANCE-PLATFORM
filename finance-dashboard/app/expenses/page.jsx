@@ -69,12 +69,19 @@ export default function ExpensesPage() {
 
     try {
       setSubmitting(true)
+      // Determine precise timestamp
+      let finalDate = new Date(date);
+      const today = new Date();
+      if (finalDate.toDateString() === today.toDateString()) {
+        finalDate = today;
+      }
+
       await apiService.addExpense({
         user_id: user.uid,
         amount: parseFloat(amount),
         category,
         description,
-        date: new Date(date).toISOString()
+        date: finalDate.toISOString()
       })
       
       setAmount("")
