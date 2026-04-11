@@ -10,7 +10,7 @@ export function TopNavbar({ title, actions }) {
   const router = useRouter()
 
   return (
-    <div className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-[oklch(0.20_0.02_260)] bg-[oklch(0.145_0_0)/80%] px-8 backdrop-blur-md">
+    <div className="sticky top-0 z-10 flex h-20 items-center justify-between border-b border-[oklch(0.20_0.02_260)] bg-[oklch(0.145_0_0)] px-8">
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-bold tracking-tight text-[oklch(0.985_0_0)]">{title || "Dashboard"}</h1>
       </div>
