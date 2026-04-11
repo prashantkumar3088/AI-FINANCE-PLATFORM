@@ -24,6 +24,28 @@ export default function ExpensesPage() {
   const [category, setCategory] = useState("Food & Dining")
   const [description, setDescription] = useState("")
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [isAiSuggesting, setIsAiSuggesting] = useState(false)
+
+  // Auto-categorization logic
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (description.trim().length > 2) {
+        setIsAiSuggesting(true)
+        try {
+          const suggested = await apiService.categorizeTx(description)
+          if (suggested && suggested !== "Others") {
+            setCategory(suggested)
+          }
+        } catch (err) {
+          console.error("Auto-categorization failed", err)
+        } finally {
+          setIsAiSuggesting(false)
+        }
+      }
+    }, 600); // 600ms debounce
+
+    return () => clearTimeout(timer)
+  }, [description])
 
   useEffect(() => {
     if (user) {
@@ -176,7 +198,10 @@ export default function ExpensesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Category</label>
+                  <label className="flex items-center justify-between text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">
+                    Category
+                    {isAiSuggesting && <span className="text-[10px] bg-[oklch(0.50_0.20_250)] text-white px-2 py-0.5 rounded-full animate-pulse">AI suggesting...</span>}
+                  </label>
                   <select 
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -188,6 +213,8 @@ export default function ExpensesPage() {
                     <option>Entertainment</option>
                     <option>Bills</option>
                     <option>Health</option>
+                    <option>Education</option>
+                    <option>Savings & Investment</option>
                     <option>Others</option>
                   </select>
                 </div>

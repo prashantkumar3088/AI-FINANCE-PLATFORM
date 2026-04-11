@@ -3,29 +3,34 @@ Auto-categorization using keyword matching (no ML model needed — instant, zero
 Can be used when a user adds a new transaction to suggest the category.
 """
 
+# High-priority brand keywords
+BRAND_KEYWORDS = {
+    "Food & Dining": ["swiggy", "zomato", "starbucks", "mcdonald", "kfc", "domino", "pizza hut", "burger king"],
+    "Shopping": ["amazon", "flipkart", "myntra", "ajio", "meesho", "nykaa", "dmart", "reliance"],
+    "Entertainment": ["netflix", "hotstar", "spotify", "youtube", "steam", "playstation", "xbox", "disney"],
+    "Transportation": ["uber", "ola", "rapido", "irctc", "indigo", "spicejet", "airasia"],
+    "Bills": ["airtel", "jio", "bsnl", "vodafone", "idea", "lic", "tata sky"],
+    "Savings & Investment": ["zerodha", "groww", "angel", "upstox"]
+}
+
 CATEGORY_KEYWORDS = {
     "Food & Dining": [
-        "swiggy", "zomato", "restaurant", "cafe", "pizza", "burger", "food",
-        "biryani", "starbucks", "mcdonald", "mcdonalds", "kfc", "domino",
-        "dining", "lunch", "dinner", "breakfast", "meal", "eat", "chai",
+        "restaurant", "cafe", "pizza", "burger", "food",
+        "biryani", "dining", "lunch", "dinner", "breakfast", "meal", "eat", "chai",
         "tea", "coffee", "bakery", "hotel", "dhaba", "canteen", "tiffin"
     ],
     "Shopping": [
-        "amazon", "flipkart", "myntra", "ajio", "meesho", "nykaa", "shop",
-        "store", "mall", "fashion", "clothes", "clothing", "shirt", "shoes",
+        "shop", "store", "mall", "fashion", "clothes", "clothing", "shirt", "shoes",
         "dress", "jeans", "bag", "accessories", "watch", "jewel", "cosmetics",
         "market", "bazaar", "supermart", "grocer", "grocery", "bigbasket",
-        "blinkit", "zepto", "instamart", "dmart", "reliance"
+        "blinkit", "zepto", "instamart"
     ],
     "Entertainment": [
-        "netflix", "hotstar", "prime", "spotify", "youtube", "zee5", "sonyliv",
-        "movie", "theatre", "cinema", "pvr", "inox", "concert", "show",
-        "game", "gaming", "steam", "playstation", "xbox", "book", "kindle",
-        "subscription", "streaming", "disney", "jiocinema", "ticketing"
+        "prime", "zee5", "sonyliv", "movie", "theatre", "cinema", "pvr", "inox", "concert", "show",
+        "game", "gaming", "book", "kindle", "subscription", "streaming", "jiocinema", "ticketing"
     ],
-    "Travel": [
-        "uber", "ola", "rapido", "auto", "cab", "taxi", "irctc", "train",
-        "flight", "air", "indigo", "spicejet", "airasia", "makemytrip",
+    "Transportation": [
+        "auto", "cab", "taxi", "train", "flight", "air", "makemytrip",
         "goibibo", "yatra", "hotel", "oyo", "treebo", "hostel", "bus",
         "redbus", "petrol", "fuel", "gas station", "toll", "metro",
         "ticket", "transport", "travel", "trip", "journey", "commute"
@@ -33,9 +38,8 @@ CATEGORY_KEYWORDS = {
     "Bills": [
         "electricity", "water", "gas", "internet", "broadband", "wifi",
         "mobile", "recharge", "postpaid", "prepaid", "phone bill", "rent",
-        "maintenance", "society", "dtv", "dish", "tata sky", "jio", "airtel",
-        "bsnl", "vi", "vodafone", "idea", "emi", "insurance", "premium",
-        "tax", "gst", "lic"
+        "maintenance", "society", "dtv", "dish", "emi", "insurance", "premium",
+        "tax", "gst"
     ],
     "Health": [
         "doctor", "hospital", "clinic", "pharmacy", "medicine", "medic",
@@ -50,15 +54,14 @@ CATEGORY_KEYWORDS = {
     ],
     "Savings & Investment": [
         "mutual fund", "sip", "fd", "fixed deposit", "ppf", "epf", "nps",
-        "zerodha", "groww", "angel", "upstox", "stock", "share", "bond",
-        "gold", "silver", "crypto", "invest", "saving", "rd", "recurring"
+        "stock", "share", "bond", "gold", "silver", "crypto", "invest", "saving", "rd", "recurring"
     ],
 }
 
 def auto_categorize(description: str) -> str:
     """
-    Suggests a category based on the transaction description using keyword matching.
-    Returns the best-matching category or 'Others' if no match found.
+    Suggests a category based on the transaction description using weighted keyword matching.
+    Priority given to brand matches.
     """
     if not description:
         return "Others"
@@ -66,14 +69,22 @@ def auto_categorize(description: str) -> str:
     desc_lower = description.lower()
 
     scores = {}
+
+    # 1. Check Brands (Weight = 5)
+    for category, keywords in BRAND_KEYWORDS.items():
+        if any(kw in desc_lower for kw in keywords):
+            scores[category] = scores.get(category, 0) + 5
+
+    # 2. Check General Keywords (Weight = 1)
     for category, keywords in CATEGORY_KEYWORDS.items():
         score = sum(1 for kw in keywords if kw in desc_lower)
         if score > 0:
-            scores[category] = score
+            scores[category] = scores.get(category, 0) + score
 
     if not scores:
         return "Others"
 
+    # Return the category with the highest score
     return max(scores, key=scores.get)
 
 
