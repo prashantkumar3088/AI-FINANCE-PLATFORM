@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import { Search, Filter, MoreVertical, ShoppingCart, Briefcase, Coffee, TrendingUp, ShoppingBag, X, Check, ChevronDown, Trash2, Copy, Eye } from "lucide-react"
 import { useSearch } from "@/context/SearchContext"
+import { apiService } from "@/lib/api-service"
 
 const CATEGORIES = ["All", "Food & Dining", "Transportation", "Shopping", "Entertainment", "Bills", "Health", "Others"]
 const SORT_OPTIONS = [
@@ -72,9 +73,14 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
     setActiveMenu(null)
   }
 
-  const handleDismiss = (id) => {
+  const handleDismiss = async (id) => {
     setDismissed(prev => new Set([...prev, id]))
     setActiveMenu(null)
+    try {
+      await apiService.deleteTransaction(id);
+    } catch (e) {
+      console.error("Failed to permanently delete transaction", e);
+    }
   }
 
   const activeFilters = (selectedCategory !== "All" ? 1 : 0) + (sortBy !== "date-desc" ? 1 : 0)
@@ -234,7 +240,7 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
                           className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.60_0.20_20)] hover:bg-[oklch(0.60_0.20_20)]/10 transition-colors"
                         >
                           <Trash2 size={14} />
-                          Remove from View
+                          Delete Transaction
                         </button>
                       </div>
                     </>
