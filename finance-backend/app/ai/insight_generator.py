@@ -29,16 +29,21 @@ def generate_insights(user_id: str, db: Client) -> list:
         return [{"message": "I'm still learning your habits. Add some transactions to get started!", "type": "info", "category": "General"}]
         
     df = pd.DataFrame(data)
-    df['date'] = pd.to_datetime(df['date'], utc=True)
+    df['date'] = pd.to_datetime(df['date'], utc=True, errors='coerce')
     
-    now = datetime.utcnow().replace(tzinfo=None)
-    current_month_start = datetime(now.year, now.month, 1)
+    # Drop rows with invalid dates to prevent crashes later
+    df = df.dropna(subset=['date'])
+    
+    # Use UTC for current_month_start to match df['date']
+    from datetime import timezone
+    now = datetime.now(timezone.utc)
+    current_month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
     
     # Insights list
     insights = []
     
     # Calculate Spent this month
-    df_current = df[df['date'].dt.tz_localize(None) >= current_month_start]
+    df_current = df[df['date'] >= current_month_start]
     current_cat_totals = df_current.groupby('category')['amount'].sum().to_dict()
     
     # Insight 1: Budget Proximity
@@ -71,7 +76,7 @@ def generate_insights(user_id: str, db: Client) -> list:
 
     # Insight 3: Comparative Analysis (Current vs Last Month)
     last_month_start = (current_month_start - pd.DateOffset(months=1))
-    df_last = df[(df['date'].dt.tz_localize(None) >= last_month_start) & (df['date'].dt.tz_localize(None) < current_month_start)]
+    df_last = df[(df['date'] >= last_month_start) & (df['date'] < current_month_start)]
     
     if not df_last.empty:
         last_cat_totals = df_last.groupby('category')['amount'].sum().to_dict()
