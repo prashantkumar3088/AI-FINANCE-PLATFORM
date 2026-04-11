@@ -12,8 +12,7 @@ export default function BudgetsPage() {
   const { user } = useAuth()
   const [budgets, setBudgets] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [newCategory, setNewCategory] = useState("")
+  const [newCategory, setNewCategory] = useState("Food & Dining")
   const [newLimit, setNewLimit] = useState("")
   const [creating, setCreating] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -41,9 +40,8 @@ export default function BudgetsPage() {
       await apiService.createBudget(user.uid, newCategory, parseFloat(newLimit))
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
-      setNewCategory("")
+      setNewCategory("Food & Dining")
       setNewLimit("")
-      setShowModal(false)
       fetchData()
     } catch (error) {
       console.error("Failed to create budget:", error)
@@ -62,14 +60,7 @@ export default function BudgetsPage() {
     <DashboardLayout>
       <TopNavbar 
         title="Monthly Budget Planner"
-        actions={
-          <Button 
-            onClick={() => setShowModal(true)}
-            className="bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white gap-2 rounded-full px-6"
-          >
-            <Plus size={16} /> New Category
-          </Button>
-        } 
+        actions={null} 
       />
       
       <div className="p-8 space-y-6 max-w-[1400px] mx-auto pb-24 relative">
@@ -106,13 +97,6 @@ export default function BudgetsPage() {
                <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
                      <h3 className="text-lg font-bold text-[oklch(0.985_0_0)]">Category Allocations</h3>
-                     <button
-                       onClick={() => setShowModal(true)}
-                       className="h-8 w-8 rounded-full bg-[oklch(0.50_0.20_250)]/10 border border-[oklch(0.50_0.20_250)] text-[oklch(0.50_0.20_250)] flex items-center justify-center hover:bg-[oklch(0.50_0.20_250)] hover:text-white transition-all hover:scale-105"
-                       title="Add Category"
-                     >
-                       <Plus size={16} />
-                     </button>
                   </div>
                   <div className="space-y-8">
                      {budgets.length > 0 ? budgets.map((budget) => {
@@ -162,13 +146,7 @@ export default function BudgetsPage() {
                            </div>
                         )
                      }) : (
-                        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-500">
-                           <button 
-                             onClick={() => setShowModal(true)}
-                             className="h-16 w-16 mb-4 rounded-full bg-[oklch(0.18_0.01_260)] border border-dashed text-[oklch(0.65_0.01_260)] border-[oklch(0.25_0.02_260)] hover:border-[oklch(0.50_0.20_250)] hover:text-white flex items-center justify-center hover:bg-[oklch(0.50_0.20_250)] transition-all hover:scale-110 shadow-lg"
-                           >
-                             <Plus size={32} />
-                           </button>
+                        <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in duration-500">
                            <p className="text-[oklch(0.65_0.01_260)] font-medium">No budgets set yet. Start by adding a limit for a category!</p>
                         </div>
                      )}
@@ -177,6 +155,57 @@ export default function BudgetsPage() {
             </div>
 
             <div className="space-y-6">
+               <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
+                 <h3 className="text-lg font-bold text-[oklch(0.985_0_0)] mb-6 flex items-center gap-2">
+                   <Plus className="bg-[oklch(0.50_0.20_250)] text-white rounded-full p-0.5" size={20} />
+                   Add New Budget
+                 </h3>
+                 
+                 <form onSubmit={handleCreateBudget} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Category Name</label>
+                      <select 
+                        value={newCategory}
+                        onChange={(e) => setNewCategory(e.target.value)}
+                        className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-3 text-[oklch(0.985_0_0)] appearance-none focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all cursor-pointer"
+                        required
+                      >
+                        <option>Food & Dining</option>
+                        <option>Transportation</option>
+                        <option>Shopping</option>
+                        <option>Entertainment</option>
+                        <option>Bills</option>
+                        <option>Health</option>
+                        <option>Others</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-1.5">Monthly Limit</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.65_0.01_260)]">₹</span>
+                        <input 
+                          type="number" 
+                          step="0.01"
+                          value={newLimit}
+                          onChange={(e) => setNewLimit(e.target.value)}
+                          placeholder="0.00" 
+                          className="w-full h-11 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl pl-8 pr-4 text-[oklch(0.985_0_0)] focus:border-[oklch(0.50_0.20_250)] focus:ring-1 focus:ring-[oklch(0.50_0.20_250)] outline-none transition-all" 
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      disabled={creating}
+                      className="w-full h-11 bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white rounded-xl font-bold transition-all pt-0 mt-5"
+                    >
+                      {creating ? <Loader2 className="animate-spin" size={20} /> : "Save Budget"}
+                    </Button>
+                 </form>
+               </div>
+
                <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] p-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-6">
                      <Sparkles className="text-[oklch(0.50_0.20_250)]" size={20} />
@@ -193,65 +222,6 @@ export default function BudgetsPage() {
                      </div>
                   </div>
                </div>
-            </div>
-          </div>
-        )}
-
-        {showModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-            <div className="relative w-full max-w-md bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] rounded-3xl p-8 shadow-2xl animate-in zoom-in duration-200">
-              <h2 className="text-2xl font-bold text-[oklch(0.985_0_0)] mb-6">Create New Budget</h2>
-              <form onSubmit={handleCreateBudget} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-[oklch(0.65_0.01_260)] mb-2">Category Name</label>
-                  <input 
-                    list="categories"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full h-12 bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-4 text-[oklch(0.985_0_0)] outline-none focus:border-[oklch(0.50_0.20_250)]"
-                    placeholder="e.g. Shopping, Rent"
-                    required
-                  />
-                  <datalist id="categories">
-                    <option value="Food & Dining" />
-                    <option value="Transportation" />
-                    <option value="Shopping" />
-                    <option value="Entertainment" />
-                    <option value="Bills" />
-                    <option value="Health" />
-                    <option value="Others" />
-                  </datalist>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[oklch(0.65_0.01_260)] mb-2">Monthly Limit ($)</label>
-                  <input 
-                    type="number" 
-                    value={newLimit}
-                    onChange={(e) => setNewLimit(e.target.value)}
-                    placeholder="0.00" 
-                    className="w-full bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] rounded-xl px-4 py-3 text-[oklch(0.985_0_0)] focus:outline-none focus:border-[oklch(0.50_0.20_250)] transition-colors"
-                  />
-                </div>
-                
-                <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    variant="outline"
-                    className="flex-1 rounded-xl py-6 border-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)]"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit"
-                    disabled={creating}
-                    className="flex-1 bg-[oklch(0.50_0.20_250)] hover:bg-[oklch(0.55_0.20_250)] text-white rounded-xl py-6 shadow-lg shadow-[oklch(0.50_0.20_250)]/20"
-                  >
-                    {creating ? <Loader2 className="animate-spin" size={18} /> : "Create Budget"}
-                  </Button>
-                </div>
-              </form>
             </div>
           </div>
         )}
