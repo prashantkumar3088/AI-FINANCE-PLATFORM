@@ -219,7 +219,7 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
                     {activeMenu === t.id && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setActiveMenu(null)} />
-                        <div className={`absolute right-2 z-20 w-44 rounded-xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] shadow-xl overflow-hidden animate-in fade-in duration-150 ${index >= filtered.length - 2 && filtered.length > 2 ? 'bottom-full mb-1 slide-in-from-bottom-1' : 'top-full mt-1 slide-in-from-top-1'}`}>
+                        <div className={`absolute right-2 z-20 w-44 rounded-xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] shadow-xl overflow-hidden animate-in fade-in duration-150 ${i >= filtered.length - 2 && filtered.length > 2 ? 'bottom-full mb-1 slide-in-from-bottom-1' : 'top-full mt-1 slide-in-from-top-1'}`}>
                           <button
                             onClick={() => handleCopy(t)}
                             className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-[oklch(0.65_0.01_260)] hover:bg-[oklch(0.25_0.02_260)] hover:text-[oklch(0.985_0_0)] transition-colors"
