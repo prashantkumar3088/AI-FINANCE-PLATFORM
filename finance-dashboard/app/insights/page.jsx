@@ -56,7 +56,18 @@ function PersonaSection({ persona }) {
 
 // ─── Section 2: Safe-to-Spend ─────────────────────────────────────────────
 function SafeToSpendSection({ data }) {
-  if (!data) return null;
+  if (!data || data.daily_safe_to_spend === undefined) {
+    return (
+      <SectionCard icon={Wallet} title="Safe-to-Spend Calculator" accent="bg-emerald-600" badge="ML Powered">
+        <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+            <Wallet className="text-emerald-500/30 mb-3" size={32} />
+            <p className="text-[oklch(0.85_0.01_260)] font-semibold mb-1">Insufficient Data</p>
+            <p className="text-sm text-[oklch(0.55_0.01_260)] max-w-sm">We need more transaction history to accurately project your safe-to-spend limit.</p>
+        </div>
+      </SectionCard>
+    );
+  }
+
   const isSafe = data.status === "safe";
   return (
     <SectionCard icon={Wallet} title="Safe-to-Spend Calculator" accent="bg-emerald-600" badge="ML Powered">
@@ -173,6 +184,18 @@ function InsightsSection({ insights }) {
 
 // ─── Section 5: Financial Advisor ────────────────────────────────────────
 function AdvisorSection({ advice, predicted }) {
+  if (!advice) {
+    return (
+      <SectionCard icon={Sparkles} title="AI Financial Advisor" accent="bg-amber-500" badge="50/30/20 Model">
+        <div className="flex flex-col items-center justify-center py-8 text-center px-4">
+            <Sparkles className="text-amber-500/30 mb-3" size={32} />
+            <p className="text-[oklch(0.85_0.01_260)] font-semibold mb-1">Advisor Offline</p>
+            <p className="text-sm text-[oklch(0.55_0.01_260)] max-w-sm">Log more income and expenses to generate personalized financial advice.</p>
+        </div>
+      </SectionCard>
+    );
+  }
+
   return (
     <SectionCard icon={Sparkles} title="AI Financial Advisor" accent="bg-amber-500" badge="50/30/20 Model">
       <div className="space-y-4">
