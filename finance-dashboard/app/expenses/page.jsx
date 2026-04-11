@@ -33,8 +33,11 @@ export default function ExpensesPage() {
         setIsAiSuggesting(true)
         try {
           const suggested = await apiService.categorizeTx(description)
-          if (suggested && suggested !== "Others") {
-            setCategory(suggested)
+          // Handle mapping if backend is still on the old 'Travel' name
+          const mapped = suggested === "Travel" ? "Transportation" : suggested;
+          
+          if (mapped && mapped !== "Others") {
+            setCategory(mapped)
           }
         } catch (err) {
           console.error("Auto-categorization failed", err)
