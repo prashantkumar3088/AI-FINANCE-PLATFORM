@@ -392,7 +392,7 @@ export default function InsightsPage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-[oklch(0.985_0_0)]">Financial Insights</h1>
+          <h1 className="text-3xl font-bold text-[oklch(0.985_0_0)]">AI Insights</h1>
           <p className="text-[oklch(0.55_0.01_260)] mt-1 text-sm">
             AI-powered analysis of your spending habits running entirely in real-time.
           </p>
