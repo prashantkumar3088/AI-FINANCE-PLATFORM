@@ -3,8 +3,8 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell, YAxis } from "recharts"
 
 export function SpendingChart({ data }) {
-  const standardColor = "oklch(0.25 0.05 250)"
-  const highlightColor = "oklch(0.50 0.20 250)"
+  const standardColor = "oklch(0.50 0.20 250)"
+  const highlightColor = "oklch(0.55 0.25 250)"
   const overBudgetColor = "oklch(0.60 0.20 20)"
 
   return (

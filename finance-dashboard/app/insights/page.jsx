@@ -306,40 +306,60 @@ export default function InsightsPage() {
 
   const fetchPersona = async () => {
     setPersona({ data: null, loading: true, error: false });
-    const res = await apiService.getPersona(user.uid);
-    setPersona({ data: res?.persona || null, loading: false, error: !res });
+    try {
+      const res = await apiService.getPersona(user.uid);
+      setPersona({ data: res?.persona || null, loading: false, error: !res });
+    } catch {
+      setPersona({ data: null, loading: false, error: true });
+    }
   };
 
   const fetchSafeToSpend = async () => {
     setSafeToSpend({ data: null, loading: true, error: false });
-    const res = await apiService.getSafeToSpend(user.uid);
-    setSafeToSpend({ data: res || null, loading: false, error: !res });
+    try {
+      const res = await apiService.getSafeToSpend(user.uid);
+      setSafeToSpend({ data: res || null, loading: false, error: !res });
+    } catch {
+      setSafeToSpend({ data: null, loading: false, error: true });
+    }
   };
 
   const fetchAnomalies = async () => {
     setAnomalies({ data: null, loading: true, error: false });
-    const res = await apiService.getAnomalies(user.uid);
-    setAnomalies({ data: res?.anomalies || null, loading: false, error: !res });
+    try {
+      const res = await apiService.getAnomalies(user.uid);
+      setAnomalies({ data: res?.anomalies || null, loading: false, error: !res });
+    } catch {
+      setAnomalies({ data: null, loading: false, error: true });
+    }
   };
 
   const fetchInsights = async () => {
     setInsights({ data: null, loading: true, error: false });
-    const res = await apiService.getInsights(user.uid);
-    setInsights({ data: res?.insights || null, loading: false, error: !res });
+    try {
+      const res = await apiService.getInsights(user.uid);
+      setInsights({ data: res?.insights || null, loading: false, error: !res });
+    } catch {
+      setInsights({ data: null, loading: false, error: true });
+    }
   };
 
   const fetchAdvisor = async () => {
     setAdvisor({ data: null, predicted: null, loading: true, error: false });
-    const [advRes, predRes] = await Promise.all([
-      apiService.getAdvice(user.uid),
-      apiService.getExpensePrediction ? apiService.getExpensePrediction(user.uid) : fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai/expenses/predict?user_id=${user.uid}`).then(r => r.json()).catch(() => null)
-    ]);
-    setAdvisor({ 
-      data: advRes?.advice || null, 
-      predicted: predRes?.predicted_next_month_expense || 0,
-      loading: false, 
-      error: !advRes 
-    });
+    try {
+      const [advRes, predRes] = await Promise.all([
+        apiService.getAdvice(user.uid),
+        apiService.getExpensePrediction ? apiService.getExpensePrediction(user.uid) : fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai/expenses/predict?user_id=${user.uid}`).then(r => r.json()).catch(() => null)
+      ]);
+      setAdvisor({ 
+        data: advRes?.advice || null, 
+        predicted: predRes?.predicted_next_month_expense || 0,
+        loading: false, 
+        error: !advRes 
+      });
+    } catch {
+      setAdvisor({ data: null, predicted: null, loading: false, error: true });
+    }
   };
 
   return (
