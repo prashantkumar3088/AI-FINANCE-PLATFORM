@@ -9,8 +9,19 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Environment Variables
-.env
+# Node modules
+node_modules/
+finance-backend/node_modules/
+finance-dashboard/node_modules/
+
+# Next.js build output
+.next/
+finance-dashboard/.next/
+
+# Virtual environment
+venv/
+.venv/
+env/
 .env.local
 .env.development.local
 .env.test.local
