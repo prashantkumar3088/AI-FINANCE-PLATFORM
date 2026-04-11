@@ -7,8 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import { apiService } from "@/lib/api-service";
 import {
   Loader2, AlertTriangle, Sparkles, TrendingUp, ShieldAlert,
-  Wallet, Tag, ChevronRight, CheckCircle, Info, Zap, Brain
+  Wallet, Tag, ChevronRight, CheckCircle, Info, Zap, Brain, Activity
 } from "lucide-react";
+import dynamic from 'next/dynamic'
+const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
 
 // ─── Reusable Card Shell ───────────────────────────────────────────────────
 function SectionCard({ icon: Icon, title, accent, children, badge }) {
@@ -195,27 +197,149 @@ function AdvisorSection({ advice, predicted }) {
   );
 }
 
+// ─── Section 6: Financial Health Score ────────────────────────────────────────
+function HealthScoreSection({ data }) {
+  if (!data) return null;
+  const savingsRate = data.savingsRate;
+  return (
+    <SectionCard icon={Activity} title="Financial Health Score" accent="bg-teal-600" badge="Overview">
+      <div className="space-y-4 mb-8">
+        <div>
+          <div className="flex justify-between text-sm mb-1 text-[oklch(0.65_0.01_260)] font-medium">
+            <span>Income</span>
+            <span className="text-[oklch(0.70_0.15_150)] font-bold">₹{data.income.toLocaleString()}</span>
+          </div>
+          <div className="h-2 w-full bg-[oklch(0.145_0_0)] rounded-full overflow-hidden">
+            <div className="h-full bg-[oklch(0.70_0.15_150)] rounded-full" style={{ width: '100%' }}></div>
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between text-sm mb-1 text-[oklch(0.65_0.01_260)] font-medium">
+            <span>Expenses</span>
+            <span className="text-[oklch(0.50_0.20_250)] font-bold">₹{data.totalExpenses.toLocaleString()}</span>
+          </div>
+          <div className="h-2 w-full bg-[oklch(0.145_0_0)] rounded-full overflow-hidden">
+            <div className="h-full bg-[oklch(0.50_0.20_250)] rounded-full" style={{ width: `${Math.min((data.totalExpenses / data.income * 100), 100)}%` }}></div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 rounded-xl bg-[oklch(0.145_0_0)] border border-[oklch(0.25_0.02_260)] flex items-center gap-4">
+        <div className="h-16 w-16 rounded-full border-4 border-[oklch(0.70_0.15_150)] flex items-center justify-center shrink-0">
+          <span className="text-lg font-bold text-[oklch(0.985_0_0)]">{savingsRate}%</span>
+        </div>
+        <div>
+          <h4 className="font-bold text-[oklch(0.985_0_0)]">Health Score</h4>
+          <p className="text-sm text-[oklch(0.65_0.01_260)]">{parseFloat(savingsRate) > 20 ? "Exceeding goals" : "Needs attention"}</p>
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+// ─── Section 7: Spending Trend ────────────────────────────────────────────────
+function SpendingTrendSection({ data }) {
+  if (!data || !data.weeklySpending) return null;
+  return (
+    <SectionCard icon={TrendingUp} title="Spending Trend" accent="bg-pink-600" badge="Weekly Analysis">
+      <div className="-mt-2 mb-2 text-sm text-[oklch(0.65_0.01_260)]">Weekly breakdown of expenses</div>
+      <SpendingChart data={data.weeklySpending} />
+    </SectionCard>
+  );
+}
+
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function InsightsPage() {
   const { user } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  
+  // Independent state for each section
+  const [persona, setPersona] = useState({ data: null, loading: true, error: false });
+  const [safeToSpend, setSafeToSpend] = useState({ data: null, loading: true, error: false });
+  const [anomalies, setAnomalies] = useState({ data: null, loading: true, error: false });
+  const [insights, setInsights] = useState({ data: null, loading: true, error: false });
+  const [advisor, setAdvisor] = useState({ data: null, predicted: null, loading: true, error: false });
+  const [spendingData, setSpendingData] = useState({ data: null, loading: true, error: false });
 
   useEffect(() => {
-    if (user) fetchAll();
+    if (user) {
+      fetchPersona();
+      fetchSafeToSpend();
+      fetchAnomalies();
+      fetchInsights();
+      fetchAdvisor();
+      fetchBaseData();
+    }
   }, [user]);
 
-  const fetchAll = async () => {
-    setLoading(true);
-    setError(false);
-    const result = await apiService.getAllInsights(user.uid);
-    if (result) {
-      setData(result);
-    } else {
-      setError(true);
+  const fetchBaseData = async () => {
+    try {
+      const expenses = await apiService.getExpenses(user.uid);
+      const totalExp = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+      
+      const storedIncome = localStorage.getItem('monthlyIncome');
+      const currentIncome = storedIncome ? parseFloat(storedIncome) : 8250;
+      const savingsRate = ((currentIncome - totalExp) / currentIncome * 100).toFixed(1);
+
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const weeklyData = days.map(day => ({ name: day, value: 0, budget: 500 }));
+      expenses.forEach((t) => {
+        const d = new Date(t.date);
+        const dayName = days[d.getDay()];
+        const weekDay = weeklyData.find(w => w.name === dayName);
+        if (weekDay) weekDay.value += t.amount;
+      });
+
+      setSpendingData({
+        data: {
+          totalExpenses: totalExp,
+          income: currentIncome,
+          savingsRate,
+          weeklySpending: weeklyData
+        },
+        loading: false,
+        error: false
+      });
+    } catch {
+      setSpendingData({ data: null, loading: false, error: true });
     }
-    setLoading(false);
+  };
+
+  const fetchPersona = async () => {
+    setPersona({ data: null, loading: true, error: false });
+    const res = await apiService.getPersona(user.uid);
+    setPersona({ data: res?.persona || null, loading: false, error: !res });
+  };
+
+  const fetchSafeToSpend = async () => {
+    setSafeToSpend({ data: null, loading: true, error: false });
+    const res = await apiService.getSafeToSpend(user.uid);
+    setSafeToSpend({ data: res || null, loading: false, error: !res });
+  };
+
+  const fetchAnomalies = async () => {
+    setAnomalies({ data: null, loading: true, error: false });
+    const res = await apiService.getAnomalies(user.uid);
+    setAnomalies({ data: res?.anomalies || null, loading: false, error: !res });
+  };
+
+  const fetchInsights = async () => {
+    setInsights({ data: null, loading: true, error: false });
+    const res = await apiService.getInsights(user.uid);
+    setInsights({ data: res?.insights || null, loading: false, error: !res });
+  };
+
+  const fetchAdvisor = async () => {
+    setAdvisor({ data: null, predicted: null, loading: true, error: false });
+    const [advRes, predRes] = await Promise.all([
+      apiService.getAdvice(user.uid),
+      apiService.getExpensePrediction ? apiService.getExpensePrediction(user.uid) : fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai/expenses/predict?user_id=${user.uid}`).then(r => r.json()).catch(() => null)
+    ]);
+    setAdvisor({ 
+      data: advRes?.advice || null, 
+      predicted: predRes?.predicted_next_month_expense || 0,
+      loading: false, 
+      error: !advRes 
+    });
   };
 
   return (
@@ -227,44 +351,46 @@ export default function InsightsPage() {
         <div>
           <h1 className="text-3xl font-bold text-[oklch(0.985_0_0)]">Financial Insights</h1>
           <p className="text-[oklch(0.55_0.01_260)] mt-1 text-sm">
-            AI-powered analysis of your spending habits — all 5 models run in a single call.
+            AI-powered analysis of your spending habits running entirely in real-time.
           </p>
         </div>
 
-        {loading ? (
-          <div className="h-80 flex flex-col items-center justify-center gap-4">
-            <div className="relative">
-              <Loader2 className="animate-spin text-violet-500" size={48} />
-              <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl" />
-            </div>
-            <p className="text-[oklch(0.65_0.01_260)] font-medium text-sm">Running FinAI Brain Scan...</p>
-          </div>
-        ) : error ? (
-          <div className="h-40 flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <AlertTriangle className="mx-auto text-amber-400" size={32} />
-              <p className="text-[oklch(0.65_0.01_260)] text-sm">Could not connect to AI backend.</p>
-              <button onClick={fetchAll} className="text-xs text-violet-400 hover:underline">Retry</button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {/* 1. Spending Persona */}
-            <PersonaSection persona={data?.persona} />
+        <div className="space-y-6">
+          {/* 1. Spending Persona */}
+          {persona.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
+          ) : !persona.error && <PersonaSection persona={persona.data} />}
 
-            {/* 2. Safe-to-Spend */}
-            <SafeToSpendSection data={data?.safe_to_spend} />
+          {/* 2. Safe-to-Spend */}
+          {safeToSpend.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-48" />
+          ) : !safeToSpend.error && <SafeToSpendSection data={safeToSpend.data} />}
 
-            {/* 3. Anomaly Detection */}
-            <AnomalySection anomalies={data?.anomalies} />
+          {/* 3. Anomaly Detection */}
+          {anomalies.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
+          ) : !anomalies.error && <AnomalySection anomalies={anomalies.data} />}
 
-            {/* 4. Budget & Spending Insights */}
-            <InsightsSection insights={data?.insights} />
+          {/* 4. Budget & Spending Insights */}
+          {insights.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
+          ) : !insights.error && <InsightsSection insights={insights.data} />}
 
-            {/* 5. AI Advisor */}
-            <AdvisorSection advice={data?.advice} predicted={data?.predicted_next_month} />
-          </div>
-        )}
+          {/* 5. AI Advisor */}
+          {advisor.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
+          ) : !advisor.error && <AdvisorSection advice={advisor.data} predicted={advisor.predicted} />}
+
+          {/* 6. Health Score */}
+          {spendingData.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
+          ) : !spendingData.error && <HealthScoreSection data={spendingData.data} />}
+
+          {/* 7. Spending Trend */}
+          {spendingData.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-48" />
+          ) : !spendingData.error && <SpendingTrendSection data={spendingData.data} />}
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -159,7 +159,7 @@ export function TransactionTable({ transactions, title = "Recent Transactions" }
         </div>
       </div>
 
-      <div className="w-full overflow-auto">
+      <div className="w-full overflow-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <table className="w-full text-sm text-left">
           <thead className="text-xs uppercase text-[oklch(0.65_0.01_260)] bg-[oklch(0.145_0_0)]/50 tracking-wider font-semibold">
             <tr>
