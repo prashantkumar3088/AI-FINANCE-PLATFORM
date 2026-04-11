@@ -67,7 +67,7 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
             "id": doc.id,
             "user_id": user_id,
             "category": category,
-            "limit": d.get("monthly_limit", 0),
+            "limit": d.get("limit") or d.get("monthly_limit", 0),
             "spent": spent
         })
         
@@ -86,7 +86,8 @@ def update_budget(budget_id: str, budget_update: BudgetUpdate, db: Client = Depe
         
     # Update document in Firestore
     doc_ref.update({
-        "monthly_limit": budget_update.monthly_limit
+        "monthly_limit": budget_update.monthly_limit,
+        "limit": budget_update.monthly_limit # Keep both for compatibility
     })
     
     # Return updated shape

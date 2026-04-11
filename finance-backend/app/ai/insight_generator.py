@@ -18,7 +18,12 @@ def generate_insights(user_id: str, db: Client) -> list:
         
     # 2. Fetch budgets
     budget_docs = db.collection('budgets').where('user_id', '==', user_id).stream()
-    budgets = {b.to_dict()['category']: b.to_dict()['monthly_limit'] for b in budget_docs}
+    budgets = {}
+    for b in budget_docs:
+        d = b.to_dict()
+        # Handle both 'limit' and 'monthly_limit' for frontend compatibility
+        limit_val = d.get('limit') or d.get('monthly_limit') or 0
+        budgets[d.get('category', 'Uncategorized')] = limit_val
         
     if not data:
         return [{"message": "I'm still learning your habits. Add some transactions to get started!", "type": "info", "category": "General"}]

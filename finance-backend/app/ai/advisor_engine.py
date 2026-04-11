@@ -12,7 +12,7 @@ def generate_advice(user_id: str, db: Client):
     total_income = sum([d.to_dict().get("amount", 0) for d in income_docs])
     
     budgets_docs = db.collection('budgets').where('user_id', '==', user_id).stream()
-    total_budget_limit = sum([d.to_dict().get("monthly_limit", 0) for d in budgets_docs])
+    total_budget_limit = sum([d.to_dict().get("limit") or d.to_dict().get("monthly_limit", 0) for d in budgets_docs])
     
     advice = []
     
