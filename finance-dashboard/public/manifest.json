@@ -1,0 +1,16 @@
+{
+  "name": "FinAI - AI Finance Platform",
+  "short_name": "FinAI",
+  "description": "Your AI-powered personal finance assistant.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#818cf8",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

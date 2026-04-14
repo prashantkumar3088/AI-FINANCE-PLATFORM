@@ -6,8 +6,8 @@ import { TopNavbar } from "@/components/layout/TopNavbar";
 import { useAuth } from "@/context/AuthContext";
 import { apiService } from "@/lib/api-service";
 import {
-  Loader2, AlertTriangle, Sparkles, TrendingUp, ShieldAlert,
-  Wallet, Tag, ChevronRight, CheckCircle, Info, Zap, Brain, Activity
+  AlertTriangle, Sparkles, TrendingUp,
+  CheckCircle, Info, Activity
 } from "lucide-react";
 import dynamic from 'next/dynamic'
 const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
@@ -34,115 +34,7 @@ function SectionCard({ icon: Icon, title, accent, children, badge }) {
   );
 }
 
-// ─── Section 1: Spending Persona ─────────────────────────────────────────────
-function PersonaSection({ persona }) {
-  if (!persona) return null;
-  return (
-    <SectionCard icon={Brain} title="Spending Persona" accent="bg-violet-600" badge="AI Assigned">
-      <div className="flex flex-col md:flex-row items-center gap-6">
-        <div className="text-7xl">{persona.emoji}</div>
-        <div className="flex-1">
-          <h3 className="text-2xl font-bold text-[oklch(0.985_0_0)] mb-1">{persona.name}</h3>
-          <p className="text-[oklch(0.70_0.01_260)] mb-4 leading-relaxed">{persona.description}</p>
-          <div className="flex items-start gap-2 bg-violet-500/10 border border-violet-500/20 rounded-xl p-3">
-            <Zap size={14} className="text-violet-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-violet-300">{persona.tip}</p>
-          </div>
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
 
-// ─── Section 2: Safe-to-Spend ─────────────────────────────────────────────
-function SafeToSpendSection({ data }) {
-  if (!data || data.daily_safe_to_spend === undefined) {
-    return (
-      <SectionCard icon={Wallet} title="Safe-to-Spend Calculator" accent="bg-emerald-600" badge="ML Powered">
-        <div className="flex flex-col items-center justify-center py-8 text-center px-4">
-            <Wallet className="text-emerald-500/30 mb-3" size={32} />
-            <p className="text-[oklch(0.85_0.01_260)] font-semibold mb-1">Insufficient Data</p>
-            <p className="text-sm text-[oklch(0.55_0.01_260)] max-w-sm">We need more transaction history to accurately project your safe-to-spend limit.</p>
-        </div>
-      </SectionCard>
-    );
-  }
-
-  const isSafe = data.status === "safe";
-  return (
-    <SectionCard icon={Wallet} title="Safe-to-Spend Calculator" accent="bg-emerald-600" badge="ML Powered">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="rounded-xl bg-[oklch(0.22_0.01_260)] p-4 text-center">
-          <p className="text-xs text-[oklch(0.55_0.01_260)] mb-1">Daily Budget</p>
-          <p className={`text-2xl font-bold ${isSafe ? "text-emerald-400" : "text-red-400"}`}>
-            ₹{data.daily_safe_to_spend?.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-          </p>
-          <p className="text-[10px] text-[oklch(0.50_0.01_260)] mt-1">per day</p>
-        </div>
-        <div className="rounded-xl bg-[oklch(0.22_0.01_260)] p-4 text-center">
-          <p className="text-xs text-[oklch(0.55_0.01_260)] mb-1">Days Left</p>
-          <p className="text-2xl font-bold text-[oklch(0.985_0_0)]">{data.days_remaining}</p>
-          <p className="text-[10px] text-[oklch(0.50_0.01_260)] mt-1">this month</p>
-        </div>
-        <div className="rounded-xl bg-[oklch(0.22_0.01_260)] p-4 text-center">
-          <p className="text-xs text-[oklch(0.55_0.01_260)] mb-1">Spent So Far</p>
-          <p className="text-2xl font-bold text-amber-400">
-            ₹{data.expenses_this_month?.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-          </p>
-          <p className="text-[10px] text-[oklch(0.50_0.01_260)] mt-1">this month</p>
-        </div>
-        <div className="rounded-xl bg-[oklch(0.22_0.01_260)] p-4 text-center">
-          <p className="text-xs text-[oklch(0.55_0.01_260)] mb-1">Predicted Remaining</p>
-          <p className="text-2xl font-bold text-sky-400">
-            ₹{data.predicted_remaining?.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-          </p>
-          <p className="text-[10px] text-[oklch(0.50_0.01_260)] mt-1">AI estimate</p>
-        </div>
-      </div>
-      <div className={`mt-4 flex items-center gap-2 rounded-xl p-3 ${isSafe ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-red-500/10 border border-red-500/20"}`}>
-        {isSafe
-          ? <CheckCircle size={14} className="text-emerald-400 shrink-0" />
-          : <AlertTriangle size={14} className="text-red-400 shrink-0" />}
-        <p className={`text-sm ${isSafe ? "text-emerald-300" : "text-red-300"}`}>
-          {isSafe
-            ? `You can safely spend ₹${data.daily_safe_to_spend?.toLocaleString("en-IN", { maximumFractionDigits: 0 })} per day for the rest of the month without exceeding your predicted budget.`
-            : "Your predicted expenses exceed your current balance. Avoid unnecessary spending for the rest of the month."}
-        </p>
-      </div>
-    </SectionCard>
-  );
-}
-
-// ─── Section 3: Anomaly Detection ─────────────────────────────────────────
-function AnomalySection({ anomalies }) {
-  if (!anomalies) return null;
-  const list = anomalies || [];
-  return (
-    <SectionCard icon={ShieldAlert} title="Spending Anomalies" accent="bg-red-600" badge="Z-Score Detection">
-      {list.length === 0 ? (
-        <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-          <CheckCircle size={20} className="text-emerald-400" />
-          <p className="text-sm text-emerald-300">No anomalies detected. All your transactions are within your normal spending range!</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {list.map((a, i) => (
-            <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-              <AlertTriangle size={16} className="text-red-400 mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-red-400">{a.category}</span>
-                  <span className="text-xs text-[oklch(0.55_0.01_260)]">Z-score: {a.z_score}</span>
-                </div>
-                <p className="text-sm text-[oklch(0.85_0.01_260)]">{a.message}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </SectionCard>
-  );
-}
 
 // ─── Section 4: AI Recommendations ──────────────────────────────────────
 const TYPE_CONFIG = {
@@ -275,24 +167,35 @@ function SpendingTrendSection({ data }) {
 export default function InsightsPage() {
   const { user } = useAuth();
   
-  // Independent state for each section
-  const [persona, setPersona] = useState({ data: null, loading: true, error: false });
-  const [safeToSpend, setSafeToSpend] = useState({ data: null, loading: true, error: false });
-  const [anomalies, setAnomalies] = useState({ data: null, loading: true, error: false });
-  const [insights, setInsights] = useState({ data: null, loading: true, error: false });
-  const [advisor, setAdvisor] = useState({ data: null, predicted: null, loading: true, error: false });
+  // Unified state for all AI data
+  const [aiData, setAiData] = useState({
+    data: null,
+    loading: true,
+    error: false
+  });
   const [spendingData, setSpendingData] = useState({ data: null, loading: true, error: false });
 
   useEffect(() => {
     if (user) {
-      fetchPersona();
-      fetchSafeToSpend();
-      fetchAnomalies();
-      fetchInsights();
-      fetchAdvisor();
+      fetchAllData();
       fetchBaseData();
     }
   }, [user]);
+
+  const fetchAllData = async () => {
+    try {
+      setAiData(prev => ({ ...prev, loading: true }));
+      const data = await apiService.getAllInsights(user.uid);
+      if (data) {
+        setAiData({ data, loading: false, error: false });
+      } else {
+        setAiData({ data: null, loading: false, error: true });
+      }
+    } catch (error) {
+      console.error("AI Insights load failed:", error);
+      setAiData({ data: null, loading: false, error: true });
+    }
+  };
 
   const fetchBaseData = async () => {
     try {
@@ -327,64 +230,6 @@ export default function InsightsPage() {
     }
   };
 
-  const fetchPersona = async () => {
-    setPersona({ data: null, loading: true, error: false });
-    try {
-      const res = await apiService.getPersona(user.uid);
-      setPersona({ data: res?.persona || null, loading: false, error: !res });
-    } catch {
-      setPersona({ data: null, loading: false, error: true });
-    }
-  };
-
-  const fetchSafeToSpend = async () => {
-    setSafeToSpend({ data: null, loading: true, error: false });
-    try {
-      const res = await apiService.getSafeToSpend(user.uid);
-      setSafeToSpend({ data: res || null, loading: false, error: !res });
-    } catch {
-      setSafeToSpend({ data: null, loading: false, error: true });
-    }
-  };
-
-  const fetchAnomalies = async () => {
-    setAnomalies({ data: null, loading: true, error: false });
-    try {
-      const res = await apiService.getAnomalies(user.uid);
-      setAnomalies({ data: res?.anomalies || null, loading: false, error: !res });
-    } catch {
-      setAnomalies({ data: null, loading: false, error: true });
-    }
-  };
-
-  const fetchInsights = async () => {
-    setInsights({ data: null, loading: true, error: false });
-    try {
-      const res = await apiService.getInsights(user.uid);
-      setInsights({ data: res?.insights || null, loading: false, error: !res });
-    } catch {
-      setInsights({ data: null, loading: false, error: true });
-    }
-  };
-
-  const fetchAdvisor = async () => {
-    setAdvisor({ data: null, predicted: null, loading: true, error: false });
-    try {
-      const [advRes, predRes] = await Promise.all([
-        apiService.getAdvice(user.uid),
-        apiService.getExpensePrediction ? apiService.getExpensePrediction(user.uid) : fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/ai/expenses/predict?user_id=${user.uid}`).then(r => r.json()).catch(() => null)
-      ]);
-      setAdvisor({ 
-        data: advRes?.advice || null, 
-        predicted: predRes?.predicted_next_month_expense || 0,
-        loading: false, 
-        error: !advRes 
-      });
-    } catch {
-      setAdvisor({ data: null, predicted: null, loading: false, error: true });
-    }
-  };
-
   return (
     <DashboardLayout>
       <TopNavbar title="AI Insights" />
@@ -400,29 +245,29 @@ export default function InsightsPage() {
 
         <div className="space-y-6">
           {/* 1. Spending Persona */}
-          {persona.loading ? (
+          {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
-          ) : !persona.error && <PersonaSection persona={persona.data} />}
+          ) : !aiData.error && <PersonaSection persona={aiData.data?.persona} />}
 
           {/* 2. Safe-to-Spend */}
-          {safeToSpend.loading ? (
+          {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-48" />
-          ) : !safeToSpend.error && <SafeToSpendSection data={safeToSpend.data} />}
+          ) : !aiData.error && <SafeToSpendSection data={aiData.data?.safe_to_spend} />}
 
           {/* 3. Anomaly Detection */}
-          {anomalies.loading ? (
+          {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
-          ) : !anomalies.error && <AnomalySection anomalies={anomalies.data} />}
+          ) : !aiData.error && <AnomalySection anomalies={aiData.data?.anomalies} />}
 
           {/* 4. Budget & Spending Insights */}
-          {insights.loading ? (
+          {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
-          ) : !insights.error && <InsightsSection insights={insights.data} />}
+          ) : !aiData.error && <InsightsSection insights={aiData.data?.insights} />}
 
           {/* 5. AI Advisor */}
-          {advisor.loading ? (
+          {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
-          ) : !advisor.error && <AdvisorSection advice={advisor.data} predicted={advisor.predicted} />}
+          ) : !aiData.error && <AdvisorSection advice={aiData.data?.advice} predicted={aiData.data?.predicted_next_month} />}
 
           {/* 6. Health Score */}
           {spendingData.loading ? (
