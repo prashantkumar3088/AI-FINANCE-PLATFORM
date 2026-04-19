@@ -62,22 +62,10 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
         d = doc.to_dict()
         category = d.get("category")
         
-        # Determine start date: use max of month_start or creation time so it only counts fresh hits in its first month
-        budget_created_str = d.get("created_at")
-        if budget_created_str:
-            try:
-                b_dt = datetime.fromisoformat(budget_created_str.replace("Z", "+00:00"))
-                b_dt = b_dt.replace(tzinfo=None)
-                effective_start = max(month_start, b_dt)
-            except Exception:
-                effective_start = month_start
-        else:
-            effective_start = month_start
-            
-        # Calculate spent for this category
+        # Calculate spent for this category from the start of the month
         spent = sum(
             e.get("amount", 0) for e in expenses 
-            if e.get("category") == category and e.get("_parsed_dt", datetime.min) >= effective_start
+            if e.get("category") == category and e.get("_parsed_dt", datetime.min) >= month_start
         )
         
         results.append({
