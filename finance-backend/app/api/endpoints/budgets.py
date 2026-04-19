@@ -61,11 +61,23 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
     for doc in budget_docs:
         d = doc.to_dict()
         category = d.get("category")
-        
-        # Calculate spent for this category from the start of the month
+
+        # Use the budget's creation date if it's newer than the start of month.
+        # This prevents newly created budgets from counting pre-existing transactions.
+        effective_start = month_start
+        budget_created_str = d.get("created_at")
+        if budget_created_str:
+            try:
+                b_dt = datetime.fromisoformat(budget_created_str.replace("Z", "+00:00")).replace(tzinfo=None)
+                if b_dt > month_start:
+                    effective_start = b_dt
+            except Exception:
+                pass
+
+        # Calculate spent for this category from the effective start date
         spent = sum(
-            e.get("amount", 0) for e in expenses 
-            if e.get("category") == category and e.get("_parsed_dt", datetime.min) >= month_start
+            e.get("amount", 0) for e in expenses
+            if e.get("category") == category and e.get("_parsed_dt", datetime.min) >= effective_start
         )
         
         results.append({
