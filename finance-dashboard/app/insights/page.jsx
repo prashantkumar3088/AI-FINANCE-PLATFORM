@@ -12,6 +12,70 @@ import {
 import dynamic from 'next/dynamic'
 const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").then(mod => mod.SpendingChart), { ssr: false })
 
+// ─── Section 0: Spending Persona ───────────────────────────────────────────
+function PersonaSection({ data, expenses }) {
+  if (!data || !expenses || expenses.length === 0) return null;
+
+  let personaName = "Balanced Budgeter";
+  let personaDesc = "You maintain a healthy balance between saving and spending.";
+  let Icon = Sparkles;
+  let color = "text-purple-400";
+  let bg = "bg-purple-600";
+  
+  const savingsRate = parseFloat(data.savingsRate || "0");
+  
+  if (savingsRate > 40) {
+    personaName = "The Master Saver";
+    personaDesc = "You have elite saving habits! Over 40% of your income is safely stored away.";
+    Icon = CheckCircle;
+    color = "text-emerald-400";
+    bg = "bg-emerald-600";
+  } else if (savingsRate < 5 && data.income > 0) {
+    personaName = "The Spontaneous Spender";
+    personaDesc = "Your spending is running high compared to your income. Time to watch those outgoing expenses!";
+    Icon = AlertTriangle;
+    color = "text-red-400";
+    bg = "bg-red-600";
+  } else {
+    // Determine Top Category
+    const catTotals = {};
+    expenses.forEach(e => {
+        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+    });
+    const topCat = Object.keys(catTotals).sort((a,b) => catTotals[b] - catTotals[a])[0];
+    const topCatAmt = catTotals[topCat];
+    
+    if (topCat === "Food & Dining" && topCatAmt > (data.totalExpenses * 0.25)) {
+      personaName = "The Foodie";
+      personaDesc = "A significant portion of your budget goes to dining out or groceries. Yum!";
+      bg = "bg-orange-500";
+      color = "text-orange-400";
+    } else if (topCat === "Entertainment" && topCatAmt > (data.totalExpenses * 0.25)) {
+      personaName = "The Entertainer";
+      personaDesc = "You love having a good time and your budget reflects it. Ensure you're paying yourself first!";
+      bg = "bg-pink-500";
+      color = "text-pink-400";
+    } else if (topCat === "Transport" && topCatAmt > (data.totalExpenses * 0.25)) {
+      personaName = "The Commuter";
+      personaDesc = "Transportation is eating a big chunk of your expenses. Keep an eye on those fuel or transit costs!";
+      bg = "bg-sky-500";
+      color = "text-sky-400";
+    }
+  }
+
+  return (
+    <div className="rounded-2xl p-6 bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] flex flex-col md:flex-row items-center gap-6">
+       <div className={`w-20 h-20 rounded-full flex items-center justify-center shrink-0 ${bg}/20 border border-white/5`}>
+          <Icon size={32} className={color} />
+       </div>
+       <div className="text-center md:text-left">
+         <h2 className="text-[10px] uppercase font-bold tracking-widest text-[oklch(0.55_0.01_260)] mb-1">Your AI Persona</h2>
+         <h3 className={`text-2xl font-bold mb-2 ${color}`}>{personaName}</h3>
+         <p className="text-[oklch(0.85_0.01_260)] text-sm">{personaDesc}</p>
+       </div>
+    </div>
+  );
+}
 // ─── Reusable Card Shell ───────────────────────────────────────────────────
 function SectionCard({ icon: Icon, title, accent, children, badge }) {
   return (
@@ -220,7 +284,8 @@ export default function InsightsPage() {
           totalExpenses: totalExp,
           income: currentIncome,
           savingsRate,
-          weeklySpending: weeklyData
+          weeklySpending: weeklyData,
+          rawExpenses: expenses
         },
         loading: false,
         error: false
@@ -244,6 +309,13 @@ export default function InsightsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* 0. Spending Persona */}
+          {spendingData.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
+          ) : !spendingData.error && spendingData.data && (
+             <PersonaSection data={spendingData.data} expenses={spendingData.data.rawExpenses} />
+          )}
+
           {/* 1. Budget & Spending Insights */}
           {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
