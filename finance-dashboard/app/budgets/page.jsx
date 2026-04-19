@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
 import { Button } from "@/components/ui/button"
-import { Plus, TrendingUp, AlertTriangle, Info, Sparkles, Loader2 } from "lucide-react"
+import { Plus, TrendingUp, AlertTriangle, Info, Sparkles, Loader2, Trash2 } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
 
@@ -48,6 +48,16 @@ export default function BudgetsPage() {
       alert("Failed to create budget. Please check connection.")
     } finally {
       setCreating(false)
+    }
+  }
+
+  const handleDeleteBudget = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this budget?")) return
+    try {
+      await apiService.deleteBudget(id)
+      fetchData()
+    } catch (e) {
+      alert("Failed to delete budget")
     }
   }
 
@@ -127,11 +137,20 @@ export default function BudgetsPage() {
                                        <p className="text-sm text-[oklch(0.65_0.01_260)]">{percentage.toFixed(0)}% of limit reached</p>
                                     </div>
                                  </div>
-                                 <div className="text-right">
-                                    <p className={`font-bold text-lg ${isOverBudget ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'}`}>
-                                       ₹{spent.toLocaleString()}
-                                    </p>
-                                    <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ₹{lim.toLocaleString()}</p>
+                                 <div className="flex items-center gap-4 text-right">
+                                    <div>
+                                       <p className={`font-bold text-lg ${isOverBudget ? 'text-[oklch(0.60_0.20_20)]' : 'text-[oklch(0.985_0_0)]'}`}>
+                                          ₹{spent.toLocaleString()}
+                                       </p>
+                                       <p className="text-sm text-[oklch(0.65_0.01_260)] font-medium">Limit: ₹{lim.toLocaleString()}</p>
+                                    </div>
+                                    <button 
+                                       onClick={() => handleDeleteBudget(budget.id)}
+                                       className="text-[oklch(0.65_0.01_260)] hover:text-red-500 transition-colors p-2 rounded-full hover:bg-[oklch(0.18_0.01_260)]"
+                                       title="Delete Budget"
+                                    >
+                                       <Trash2 size={18} />
+                                    </button>
                                  </div>
                               </div>
                               
