@@ -16,63 +16,91 @@ const SpendingChart = dynamic(() => import("@/components/charts/SpendingChart").
 function PersonaSection({ data, expenses }) {
   if (!data || !expenses || expenses.length === 0) return null;
 
-  let personaName = "Balanced Budgeter";
-  let personaDesc = "You maintain a healthy balance between saving and spending.";
-  let Icon = Sparkles;
-  let color = "text-purple-400";
-  let bg = "bg-purple-600";
-  
+  // Compute top category and its share
+  const catTotals = {};
+  expenses.forEach(e => {
+    catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+  });
+  const topCat = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a])[0] || "General";
+  const topPct = data.totalExpenses > 0 ? Math.round((catTotals[topCat] / data.totalExpenses) * 100) : 0;
+
   const savingsRate = parseFloat(data.savingsRate || "0");
-  
+
+  let personaName = "The Well-Rounded Saver";
+  let personaDesc = `Your spending is balanced. Your top category is '${topCat}' at ${topPct}% of total expenses.`;
+  let tip = "You're doing great! Consider channelling your surplus into a diversified index fund.";
+  let emoji = "💰";
+  let accentBg = "bg-purple-600";
+  let accentBorder = "border-purple-500/30";
+
   if (savingsRate > 40) {
     personaName = "The Master Saver";
-    personaDesc = "You have elite saving habits! Over 40% of your income is safely stored away.";
-    Icon = CheckCircle;
-    color = "text-emerald-400";
-    bg = "bg-emerald-600";
+    personaDesc = `Incredible discipline! You save over 40% of income. Top spend: '${topCat}' at ${topPct}%.`;
+    tip = "Consider investing your surplus — a diversified index fund could grow your wealth significantly.";
+    emoji = "🏆";
+    accentBg = "bg-emerald-600";
+    accentBorder = "border-emerald-500/30";
   } else if (savingsRate < 5 && data.income > 0) {
     personaName = "The Spontaneous Spender";
-    personaDesc = "Your spending is running high compared to your income. Time to watch those outgoing expenses!";
-    Icon = AlertTriangle;
-    color = "text-red-400";
-    bg = "bg-red-600";
-  } else {
-    // Determine Top Category
-    const catTotals = {};
-    expenses.forEach(e => {
-        catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
-    });
-    const topCat = Object.keys(catTotals).sort((a,b) => catTotals[b] - catTotals[a])[0];
-    const topCatAmt = catTotals[topCat];
-    
-    if (topCat === "Food & Dining" && topCatAmt > (data.totalExpenses * 0.25)) {
-      personaName = "The Foodie";
-      personaDesc = "A significant portion of your budget goes to dining out or groceries. Yum!";
-      bg = "bg-orange-500";
-      color = "text-orange-400";
-    } else if (topCat === "Entertainment" && topCatAmt > (data.totalExpenses * 0.25)) {
-      personaName = "The Entertainer";
-      personaDesc = "You love having a good time and your budget reflects it. Ensure you're paying yourself first!";
-      bg = "bg-pink-500";
-      color = "text-pink-400";
-    } else if (topCat === "Transport" && topCatAmt > (data.totalExpenses * 0.25)) {
-      personaName = "The Commuter";
-      personaDesc = "Transportation is eating a big chunk of your expenses. Keep an eye on those fuel or transit costs!";
-      bg = "bg-sky-500";
-      color = "text-sky-400";
-    }
+    personaDesc = `Spending is running high vs income. Main driver: '${topCat}' at ${topPct}%.`;
+    tip = "Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings to build a safety net.";
+    emoji = "⚡";
+    accentBg = "bg-red-600";
+    accentBorder = "border-red-500/30";
+  } else if (topCat === "Food & Dining" && topPct > 25) {
+    personaName = "The Foodie";
+    personaDesc = `A big chunk of your budget goes to dining. '${topCat}' accounts for ${topPct}% of total expenses.`;
+    tip = "Meal prepping a few times a week can cut your food bill by up to 30%.";
+    emoji = "🍜";
+    accentBg = "bg-orange-500";
+    accentBorder = "border-orange-500/30";
+  } else if (topCat === "Entertainment" && topPct > 25) {
+    personaName = "The Entertainer";
+    personaDesc = `You love a good time! '${topCat}' leads at ${topPct}% of total expenses.`;
+    tip = "Set a weekly entertainment cap to enjoy life AND keep your savings on track.";
+    emoji = "🎬";
+    accentBg = "bg-pink-600";
+    accentBorder = "border-pink-500/30";
+  } else if (topCat === "Transport" && topPct > 25) {
+    personaName = "The Commuter";
+    personaDesc = `Travel costs are your biggest outlay. '${topCat}' is ${topPct}% of expenses.`;
+    tip = "Carpooling or a monthly transit pass could save you thousands a year.";
+    emoji = "🚌";
+    accentBg = "bg-sky-600";
+    accentBorder = "border-sky-500/30";
   }
 
   return (
-    <div className="rounded-2xl p-6 bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] flex flex-col md:flex-row items-center gap-6">
-       <div className={`w-20 h-20 rounded-full flex items-center justify-center shrink-0 ${bg}/20 border border-white/5`}>
-          <Icon size={32} className={color} />
-       </div>
-       <div className="text-center md:text-left">
-         <h2 className="text-[10px] uppercase font-bold tracking-widest text-[oklch(0.55_0.01_260)] mb-1">Your AI Persona</h2>
-         <h3 className={`text-2xl font-bold mb-2 ${color}`}>{personaName}</h3>
-         <p className="text-[oklch(0.85_0.01_260)] text-sm">{personaDesc}</p>
-       </div>
+    <div className="rounded-2xl bg-[oklch(0.18_0.01_260)] border border-[oklch(0.25_0.02_260)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[oklch(0.22_0.02_260)]">
+        <div className="flex items-center gap-3">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${accentBg}`}>
+            <Sparkles size={16} className="text-white" />
+          </div>
+          <h2 className="text-base font-bold text-[oklch(0.985_0_0)]">Spending Persona</h2>
+        </div>
+        <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-[oklch(0.25_0.02_260)] text-[oklch(0.65_0.01_260)]">
+          AI Assigned
+        </span>
+      </div>
+      {/* Body */}
+      <div className="p-6">
+        <div className="flex items-center gap-5 mb-5">
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shrink-0 ${accentBg}/20 border ${accentBorder}`}>
+            {emoji}
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-[oklch(0.985_0_0)] mb-1">{personaName}</h3>
+            <p className="text-sm text-[oklch(0.70_0.01_260)] leading-relaxed">{personaDesc}</p>
+          </div>
+        </div>
+        {/* AI Tip chip */}
+        <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+          <Sparkles size={14} className="text-purple-400 mt-0.5 shrink-0" />
+          <p className="text-sm text-purple-200 leading-relaxed">{tip}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -311,27 +339,27 @@ export default function InsightsPage() {
         <div className="space-y-6">
           {/* 0. Spending Persona */}
           {spendingData.loading ? (
-             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-36" />
           ) : !spendingData.error && spendingData.data && (
              <PersonaSection data={spendingData.data} expenses={spendingData.data.rawExpenses} />
           )}
 
-          {/* 1. Budget & Spending Insights */}
+          {/* 1. Financial Health Score — appears 2nd just like the old design */}
+          {spendingData.loading ? (
+             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
+          ) : !spendingData.error && <HealthScoreSection data={spendingData.data} />}
+
+          {/* 2. Budget & Spending Insights */}
           {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
           ) : !aiData.error && <InsightsSection insights={aiData.data?.insights} />}
 
-          {/* 5. AI Advisor */}
+          {/* 3. AI Advisor */}
           {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
           ) : !aiData.error && <AdvisorSection advice={aiData.data?.advice} predicted={aiData.data?.predicted_next_month} />}
 
-          {/* 6. Health Score */}
-          {spendingData.loading ? (
-             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
-          ) : !spendingData.error && <HealthScoreSection data={spendingData.data} />}
-
-          {/* 7. Spending Trend */}
+          {/* 4. Spending Trend */}
           {spendingData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-48" />
           ) : !spendingData.error && <SpendingTrendSection data={spendingData.data} />}
