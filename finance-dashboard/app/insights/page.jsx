@@ -244,22 +244,7 @@ export default function InsightsPage() {
         </div>
 
         <div className="space-y-6">
-          {/* 1. Spending Persona */}
-          {aiData.loading ? (
-             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
-          ) : !aiData.error && <PersonaSection persona={aiData.data?.persona} />}
-
-          {/* 2. Safe-to-Spend */}
-          {aiData.loading ? (
-             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-48" />
-          ) : !aiData.error && <SafeToSpendSection data={aiData.data?.safe_to_spend} />}
-
-          {/* 3. Anomaly Detection */}
-          {aiData.loading ? (
-             <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-32" />
-          ) : !aiData.error && <AnomalySection anomalies={aiData.data?.anomalies} />}
-
-          {/* 4. Budget & Spending Insights */}
+          {/* 1. Budget & Spending Insights */}
           {aiData.loading ? (
              <div className="animate-pulse rounded-2xl bg-[oklch(0.18_0.01_260)] h-40" />
           ) : !aiData.error && <InsightsSection insights={aiData.data?.insights} />}
