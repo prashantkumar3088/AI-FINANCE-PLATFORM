@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
+from datetime import datetime
 from app.database.firebase import get_db
 from app.schemas.all import BudgetCreate, BudgetUpdate, Budget as BudgetSchema
 from google.cloud.firestore import Client
@@ -13,6 +14,7 @@ def create_budget(budget: BudgetCreate, db: Client = Depends(get_db)):
         
     budgets_ref = db.collection('budgets')
     doc_data = budget.dict()
+    doc_data["created_at"] = datetime.utcnow().isoformat() + "Z"
     
     _, doc_ref = budgets_ref.add(doc_data)
     
@@ -30,7 +32,6 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
     budget_docs = budgets_ref.where('user_id', '==', user_id).stream()
     
     # Get expenses to calculate spent
-    from datetime import datetime
     now = datetime.utcnow()
     month_start = datetime(now.year, now.month, 1)
     
@@ -53,6 +54,7 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
                  dt = dt.replace(tzinfo=None)
                  
              if dt >= month_start:
+                 d["_parsed_dt"] = dt
                  expenses.append(d)
 
     results = []
@@ -60,8 +62,23 @@ def list_budgets(user_id: str, db: Client = Depends(get_db)):
         d = doc.to_dict()
         category = d.get("category")
         
+        # Determine start date: use max of month_start or creation time so it only counts fresh hits in its first month
+        budget_created_str = d.get("created_at")
+        if budget_created_str:
+            try:
+                b_dt = datetime.fromisoformat(budget_created_str.replace("Z", "+00:00"))
+                b_dt = b_dt.replace(tzinfo=None)
+                effective_start = max(month_start, b_dt)
+            except Exception:
+                effective_start = month_start
+        else:
+            effective_start = month_start
+            
         # Calculate spent for this category
-        spent = sum(e.get("amount", 0) for e in expenses if e.get("category") == category)
+        spent = sum(
+            e.get("amount", 0) for e in expenses 
+            if e.get("category") == category and e.get("_parsed_dt", datetime.min) >= effective_start
+        )
         
         results.append({
             "id": doc.id,
