@@ -14,6 +14,19 @@
   <a href="#usage">Usage</a>
 </p>
 
+<p align="center">
+  <a href="https://ai-finance-platform-b5f75.web.app/dashboard/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀%20Live%20Demo-Visit%20App-blue?style=for-the-badge" alt="Live Demo" />
+  </a>
+</p>
+
+## 🌐 Live Deployment
+
+> **The app is live and accessible here:**
+> ### 👉 [https://ai-finance-platform-b5f75.web.app/dashboard/](https://ai-finance-platform-b5f75.web.app/dashboard/)
+
+Hosted on **Firebase Hosting**.
+
 ---
 
 ## ✨ Features
