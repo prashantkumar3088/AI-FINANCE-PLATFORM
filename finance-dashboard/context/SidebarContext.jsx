@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 const SidebarContext = createContext({
@@ -13,13 +13,13 @@ export const SidebarProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  const toggle = () => setIsOpen((prev) => !prev);
-  const close = () => setIsOpen(false);
+  const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
+  const close = useCallback(() => setIsOpen(false), []);
 
   // Close sidebar on navigation
   useEffect(() => {
     close();
-  }, [pathname]);
+  }, [pathname, close]);
 
   return (
     <SidebarContext.Provider value={{ isOpen, toggle, close }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
 import dynamic from 'next/dynamic'
@@ -23,13 +23,7 @@ export default function DashboardPage() {
     loading: true
   })
 
-  useEffect(() => {
-    if (user) {
-      loadDashboardData()
-    }
-  }, [user])
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setData(prev => ({ ...prev, loading: true }))
       const expenses = await apiService.getExpenses(user.uid)
@@ -72,7 +66,13 @@ export default function DashboardPage() {
       console.error("Dashboard load failed:", error)
       setData(prev => ({ ...prev, loading: false }))
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (user) {
+      loadDashboardData()
+    }
+  }, [user, loadDashboardData])
 
   const savingsRate = ((data.income - data.totalExpenses) / data.income * 100).toFixed(1)
 

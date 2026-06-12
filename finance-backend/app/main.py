@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
-from app.api.endpoints import expenses, budgets, transactions, goals, ai
+from app.api.endpoints import expenses, budgets, transactions, ai
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -26,5 +26,4 @@ def root():
 app.include_router(expenses.router, prefix="/expenses", tags=["Expenses"])
 app.include_router(budgets.router, prefix="/budgets", tags=["Budgets"])
 app.include_router(transactions.router, prefix="/transactions", tags=["Transactions"])
-app.include_router(goals.router, prefix="/goals", tags=["Financial Goals"])
 app.include_router(ai.router, prefix="/ai", tags=["AI Insights"])

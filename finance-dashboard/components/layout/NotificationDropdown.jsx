@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Bell, Check, Info, AlertTriangle, ShieldAlert, Sparkles, X } from "lucide-react";
+import { Bell, ShieldAlert, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { apiService } from "@/lib/api-service";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ export function NotificationDropdown() {
     try {
       setLoading(true);
       const [insightsData, alertsData] = await Promise.all([
-        apiService.getInsights(user.uid),
+        apiService.getAllInsights(user.uid),
         apiService.getAlerts(user.uid)
       ]);
 
@@ -54,7 +54,7 @@ export function NotificationDropdown() {
         }))
       ];
 
-      const result = formatted.sort((a,b) => 0.5 - Math.random()).slice(0, 5);
+      const result = formatted.slice(0, 5);
       // Cache for 5 minutes
       notifCache.data = result;
       notifCache.expiresAt = Date.now() + 5 * 60 * 1000;

@@ -9,15 +9,13 @@ import {
   PieChart,
   TrendingUp,
   Settings,
-  HelpCircle,
-  AlertTriangle,
   ShieldAlert,
   Wallet,
+  X,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/context/SidebarContext";
-import { Menu, X } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard/", icon: LayoutDashboard },

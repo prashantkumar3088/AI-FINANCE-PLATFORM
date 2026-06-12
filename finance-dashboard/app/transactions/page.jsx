@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { TopNavbar } from "@/components/layout/TopNavbar"
 import { TransactionTable } from "@/components/finance/TransactionTable"
@@ -8,34 +8,23 @@ import { useAuth } from "@/context/AuthContext"
 import { apiService } from "@/lib/api-service"
 import { Loader2, Calendar } from "lucide-react"
 
-const formatMonth = (date) => {
-  return new Date(date).toLocaleString("en-IN", { month: "long", year: "numeric" })
-}
-
 export default function TransactionsPage() {
   const { user } = useAuth()
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState("all")
 
-  useEffect(() => {
-    if (user) {
-      loadTransactions()
-    }
-  }, [user])
-
-  const loadTransactions = () => {
+  const loadTransactions = useCallback(() => {
+    if (!user) return
     setLoading(true)
     apiService.getAllTransactions(user.uid)
       .then(expenses => {
-        // Filter out transactions with invalid or missing dates
         const validExpenses = expenses.filter(t => t.date && !isNaN(new Date(t.date).getTime()));
-        
         const formatted = validExpenses.map((t) => ({
           id: t.id,
           description: t.description || "No description",
           category: t.category,
-          date: t.date,  // keep raw date for month grouping
+          date: t.date,        // raw ISO date for month grouping
           displayDate: new Date(t.date).toLocaleDateString("en-IN"),
           amount: t.amount,
           icon: t.category?.toLowerCase().includes('food') ? 'coffee' :
@@ -47,7 +36,11 @@ export default function TransactionsPage() {
       })
       .catch(error => console.error("Failed to load transactions:", error))
       .finally(() => setLoading(false))
-  }
+  }, [user])
+
+  useEffect(() => {
+    loadTransactions()
+  }, [loadTransactions])
 
   // Build month options from transaction dates
   const monthKeys = [...new Set(
@@ -68,6 +61,14 @@ export default function TransactionsPage() {
         .map(t => ({ ...t, date: t.displayDate }))
 
   const totalSpent = filteredTransactions.reduce((acc, t) => acc + Math.abs(t.amount), 0)
+
+  const selectedMonthLabel = (() => {
+    if (selectedMonth === "all") return "All Transactions"
+    const match = monthKeys.find(m => m === selectedMonth)
+    if (!match) return "Transactions"
+    const [year, month] = match.split("-")
+    return `Transactions — ${new Date(Number(year), Number(month) - 1, 1).toLocaleString("en-IN", { month: "long", year: "numeric" })}`
+  })()
 
   return (
     <DashboardLayout>
@@ -144,10 +145,7 @@ export default function TransactionsPage() {
               </div>
             )}
 
-            <TransactionTable
-              transactions={filteredTransactions}
-              title={selectedMonth === "all" ? "All Transactions" : `Transactions — ${new Date(monthKeys.find(m => m === selectedMonth) ? `${selectedMonth}-01` : Date.now()).toLocaleString("en-IN", { month: "long", year: "numeric" })}`}
-            />
+            <TransactionTable transactions={filteredTransactions} title={selectedMonthLabel} />
           </>
         )}
       </div>
